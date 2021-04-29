@@ -1,14 +1,14 @@
 mod bodies;
 
-use crate::bodies::{SpaceBody, WorldSpace};
+use bodies::{SpaceBody, WorldSpace};
 use sfml::{
     graphics::{Color, RenderTarget, RenderWindow},
     window::{Event, Style},
 };
 use std::f32::consts::PI;
 fn main() {
-    let p1 = SpaceBody::new(90.0, 90.0, 1000.0, 50.0, 20.0, 10.0, false);
-    let p2 = SpaceBody::new(500.0, 500.0, 500.0, 25.0, -10.0, 10.0, true);
+    let p1 = SpaceBody::new(90.0, 90.0, 1000.0, 50.0, 0.0, 10.0, false);
+    let p2 = SpaceBody::new(500.0, 500.0, 500.0, 25.0, 0.0, 10.0, false);
     let mut space = WorldSpace::with_bodies(vec![p1, p2]);
     let mut window = RenderWindow::new(
         (1600, 1600),

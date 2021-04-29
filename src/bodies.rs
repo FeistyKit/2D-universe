@@ -1,4 +1,5 @@
 use crate::PI;
+use serde::{Deserialize, Serialize};
 use sfml::{
     graphics::{CircleShape, Drawable, RenderStates, RenderTarget, Transformable},
     system::Vector2f,
@@ -22,6 +23,10 @@ impl SpaceBody<'_> {
     pub fn update_shape_position(&mut self) {
         self.shape
             .set_position(Vector2f::new(self.x - self.radius, self.y - self.radius));
+        let error_margin = 0.1;
+        if (self.radius - self.shape.radius()).abs() > error_margin {
+            self.shape.set_radius(self.radius);
+        }
     }
     pub fn new<'a>(
         x: f32,
@@ -62,6 +67,39 @@ impl PartialEq for SpaceBody<'_> {
             && self.ax == other.ax
             && self.ay == other.ay
             && self.mass == other.mass
+            && self.radius == other.radius
+    }
+}
+
+impl From<SpaceBody<'_>> for BodySerializable {
+    fn from(other: SpaceBody<'_>) -> Self {
+        BodySerializable {
+            x: other.x,
+            y: other.y,
+            xv: other.xv,
+            yv: other.yv,
+            ax: other.ax,
+            ay: other.ay,
+            mass: other.mass,
+            radius: other.radius,
+            immovable: other.immovable,
+        }
+    }
+}
+impl From<BodySerializable> for SpaceBody<'_> {
+    fn from(other: BodySerializable) -> Self {
+        SpaceBody {
+            x: other.x,
+            y: other.y,
+            xv: other.xv,
+            yv: other.yv,
+            ax: other.ax,
+            ay: other.ay,
+            mass: other.mass,
+            radius: other.radius,
+            immovable: other.immovable,
+            shape: CircleShape::new(other.radius, (other.radius * PI) as u32),
+        }
     }
 }
 
@@ -121,4 +159,16 @@ impl WorldSpace<'_> {
             planet.shape.draw(target, states);
         }
     }
+}
+#[derive(Debug, Serialize, Deserialize)]
+struct BodySerializable {
+    x: f32,
+    y: f32,
+    xv: f32,
+    yv: f32,
+    ax: f32,
+    ay: f32,
+    mass: f32,
+    radius: f32,
+    immovable: bool,
 }
