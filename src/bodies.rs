@@ -1,5 +1,4 @@
 use crate::PI;
-
 use sfml::{
     graphics::{CircleShape, Drawable, RenderStates, RenderTarget, Transformable},
     system::Vector2f,
@@ -15,13 +14,14 @@ pub struct SpaceBody<'a> {
     ax: f32,
     ay: f32,
     mass: f32,
+    radius: f32,
     shape: CircleShape<'a>,
     immovable: bool,
 }
 impl SpaceBody<'_> {
     pub fn update_shape_position(&mut self) {
         self.shape
-            .set_position(Vector2f::new(self.x as f32, self.y as f32));
+            .set_position(Vector2f::new(self.x - self.radius, self.y - self.radius));
     }
     pub fn new<'a>(
         x: f32,
@@ -40,6 +40,7 @@ impl SpaceBody<'_> {
             ax: 0.0,
             ay: 0.0,
             mass,
+            radius,
             shape: CircleShape::new(radius, (radius * PI) as u32),
             immovable,
         }
