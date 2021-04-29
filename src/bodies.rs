@@ -1,3 +1,5 @@
+use std::{error::Error, fs::File, io::Write, path::Path};
+
 use crate::PI;
 use serde::{Deserialize, Serialize};
 use sfml::{
@@ -158,6 +160,12 @@ impl WorldSpace<'_> {
         for planet in &self.bodies {
             planet.shape.draw(target, states);
         }
+    }
+    pub fn serialize<T: AsRef<Path>>(self, p: T) -> Result<(), Box<dyn Error>> {
+        let serializable = WorldSpaceSerializable::from(self);
+        let serialized = serde_json::to_string(&serializable)?;
+        File::create(p)?.write_all(serialized.as_bytes())?;
+        Ok(())
     }
 }
 #[derive(Debug, Serialize, Deserialize)]

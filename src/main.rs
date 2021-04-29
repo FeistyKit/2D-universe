@@ -3,7 +3,7 @@ mod bodies;
 use bodies::{SpaceBody, WorldSpace};
 use sfml::{
     graphics::{Color, RenderTarget, RenderWindow},
-    window::{Event, Style},
+    window::{Event, Key, Style},
 };
 use std::f32::consts::PI;
 fn main() {
@@ -17,10 +17,24 @@ fn main() {
         &Default::default(),
     );
     window.set_framerate_limit(45);
-    while window.is_open() {
+    'running: while window.is_open() {
         while let Some(event) = window.poll_event() {
             if event == Event::Closed {
                 window.close();
+            }
+            if let Event::KeyPressed {
+                code,
+                alt: _,
+                ctrl: _,
+                shift: _,
+                system: _,
+            } = event
+            {
+                if code == Key::S {
+                    window.close();
+                    space.serialize("space.json").unwrap();
+                    break 'running;
+                }
             }
         }
         window.set_active(true);
