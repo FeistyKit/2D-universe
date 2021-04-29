@@ -2,10 +2,7 @@ mod bodies;
 
 use crate::bodies::{SpaceBody, WorldSpace};
 use sfml::{
-    graphics::{
-        CircleShape, Color, Drawable, RenderStates, RenderTarget, RenderWindow, Transformable,
-    },
-    system::Vector2f,
+    graphics::{Color, RenderTarget, RenderWindow},
     window::{Event, Style},
 };
 use std::f32::consts::PI;
