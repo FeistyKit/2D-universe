@@ -172,3 +172,34 @@ struct BodySerializable {
     radius: f32,
     immovable: bool,
 }
+#[derive(Debug, Serialize, Deserialize)]
+struct WorldSpaceSerializable {
+    dt: Time,
+    gravity: f32,
+    softening: f32,
+    bodies: Vec<BodySerializable>,
+}
+impl From<WorldSpace<'_>> for WorldSpaceSerializable {
+    fn from(other: WorldSpace) -> Self {
+        WorldSpaceSerializable {
+            dt: other.dt,
+            gravity: other.gravity,
+            softening: other.softening,
+            bodies: other
+                .bodies
+                .into_iter()
+                .map(BodySerializable::from)
+                .collect(),
+        }
+    }
+}
+impl From<WorldSpaceSerializable> for WorldSpace<'_> {
+    fn from(other: WorldSpaceSerializable) -> Self {
+        WorldSpace {
+            dt: other.dt,
+            gravity: other.gravity,
+            softening: other.softening,
+            bodies: other.bodies.into_iter().map(SpaceBody::from).collect(),
+        }
+    }
+}
