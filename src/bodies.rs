@@ -1,4 +1,9 @@
-use std::{error::Error, fs::File, io::Write, path::Path};
+use std::{
+    error::Error,
+    fs::{read_to_string, File},
+    io::Write,
+    path::Path,
+};
 
 use crate::PI;
 use serde::{Deserialize, Serialize};
@@ -166,6 +171,11 @@ impl WorldSpace<'_> {
         let serialized = serde_json::to_string(&serializable)?;
         File::create(p)?.write_all(serialized.as_bytes())?;
         Ok(())
+    }
+    pub fn deserialize<'a, T: AsRef<Path>>(p: T) -> Result<WorldSpace<'a>, Box<dyn Error>> {
+        let raw = read_to_string(p)?;
+        let space = serde_json::from_str::<WorldSpaceSerializable>(&raw)?;
+        Ok(WorldSpace::from(space))
     }
 }
 #[derive(Debug, Serialize, Deserialize)]
