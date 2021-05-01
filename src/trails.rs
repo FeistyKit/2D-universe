@@ -13,7 +13,7 @@ impl TrailPoint<'_> {
     pub fn draw(&self, target: &mut dyn RenderTarget) {
         self.circle.draw(target, &Default::default());
     }
-    pub fn new(x: f32, y: f32, other_radius: f32) -> Self {
+    pub fn new(x: f32, y: f32) -> Self {
         let radius = 5.0;
         let mut circle = CircleShape::new(radius, 20);
         circle.set_position(Vector2f::new(x, y));
@@ -24,6 +24,7 @@ impl TrailPoint<'_> {
         self.age > DEATH_AGE
     }
 }
+#[allow(unused)]
 pub fn pyth_thm(a: f32, b: f32) -> f32 {
     (a * a + b * b).sqrt()
 }

@@ -8,7 +8,7 @@ use std::{
 use crate::{trails::TrailPoint, PI};
 use serde::{Deserialize, Serialize};
 use sfml::{
-    graphics::{CircleShape, Drawable, RenderStates, RenderTarget, Transformable},
+    graphics::{CircleShape, Color, Drawable, RenderStates, RenderTarget, Shape, Transformable},
     system::Vector2f,
 };
 
@@ -37,17 +37,17 @@ impl SpaceBody<'_> {
         }
     }
     pub fn new<'a>(
-        x: f32,
-        y: f32,
+        position: (f32, f32),
         mass: f32,
         radius: f32,
         xv: f32,
         yv: f32,
         immovable: bool,
+        color: Color,
     ) -> SpaceBody<'a> {
         SpaceBody {
-            x,
-            y,
+            x: position.0,
+            y: position.1,
             xv,
             yv,
             ax: 0.0,
@@ -55,7 +55,11 @@ impl SpaceBody<'_> {
             mass,
             radius,
             next_trail: 10,
-            shape: CircleShape::new(radius, (radius * PI) as u32),
+            shape: {
+                let mut p = CircleShape::new(radius, (radius * PI) as u32);
+                p.set_fill_color(color);
+                p
+            },
             immovable,
         }
     }
@@ -146,8 +150,7 @@ impl WorldSpace<'_> {
             planet.next_trail -= 1;
             if planet.next_trail < 1 {
                 planet.next_trail = 10;
-                self.trails
-                    .push(TrailPoint::new(planet.x, planet.y, planet.shape.radius()));
+                self.trails.push(TrailPoint::new(planet.x, planet.y));
             }
         }
     }
@@ -193,10 +196,10 @@ impl WorldSpace<'_> {
         target: &mut dyn RenderTarget,
         states: &RenderStates<'texture, 'shader, 'shader_texture>,
     ) {
+        self.draw_trails(target);
         for planet in &self.bodies {
             planet.shape.draw(target, states);
         }
-        self.draw_trails(target);
     }
     pub fn serialize<T: AsRef<Path>>(self, p: T) -> Result<(), Box<dyn Error>> {
         let serializable = WorldSpaceSerializable::from(self);
@@ -233,8 +236,16 @@ impl WorldSpace<'_> {
 }
 impl Default for WorldSpace<'_> {
     fn default() -> Self {
-        let p1 = SpaceBody::new(800.0, 600.0, 50.0, 30.0, -50.0, 0.0, false);
-        let p2 = SpaceBody::new(800.0, 1000.0, 50.0, 30.0, 50.0, 0.0, false);
+        let p1 = SpaceBody::new((800.0, 600.0), 50.0, 30.0, -50.0, 0.0, false, Color::WHITE);
+        let p2 = SpaceBody::new(
+            (800.0, 1000.0),
+            50.0,
+            30.0,
+            50.0,
+            0.0,
+            false,
+            Color::rgb(40, 60, 110),
+        );
         WorldSpace::with_bodies(vec![p1, p2])
     }
 }
