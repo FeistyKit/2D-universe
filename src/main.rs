@@ -1,4 +1,5 @@
 mod bodies;
+mod trails;
 
 use bodies::{SpaceBody, WorldSpace};
 use sfml::{
@@ -7,9 +8,11 @@ use sfml::{
 };
 use std::f32::consts::PI;
 fn main() {
-    let p1 = SpaceBody::new(90.0, 90.0, 1000.0, 50.0, 0.0, 10.0, false);
-    let p2 = SpaceBody::new(500.0, 500.0, 500.0, 25.0, 0.0, 10.0, false);
-    let mut space = WorldSpace::with_bodies(vec![p1, p2]);
+    let mut space = WorldSpace::deserialize("space.json").unwrap_or({
+        let p1 = SpaceBody::new(800.0, 600.0, 50.0, 30.0, -50.0, 0.0, false);
+        let p2 = SpaceBody::new(800.0, 1000.0, 50.0, 30.0, 50.0, 0.0, false);
+        WorldSpace::with_bodies(vec![p1, p2])
+    });
     let mut window = RenderWindow::new(
         (1600, 1600),
         "Universe simulator",
@@ -42,6 +45,7 @@ fn main() {
         space.update_acceleration();
         space.update_positions();
         space.update_time();
+        space.update_trails();
         space.draw(&mut window, &Default::default());
         window.display();
     }

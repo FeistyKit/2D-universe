@@ -5,7 +5,7 @@ use std::{
     path::Path,
 };
 
-use crate::PI;
+use crate::{trails::TrailPoint, PI};
 use serde::{Deserialize, Serialize};
 use sfml::{
     graphics::{CircleShape, Drawable, RenderStates, RenderTarget, Transformable},
@@ -23,6 +23,7 @@ pub struct SpaceBody<'a> {
     ay: f32,
     mass: f32,
     radius: f32,
+    next_trail: usize,
     shape: CircleShape<'a>,
     immovable: bool,
 }
@@ -53,16 +54,18 @@ impl SpaceBody<'_> {
             ay: 0.0,
             mass,
             radius,
+            next_trail: 10,
             shape: CircleShape::new(radius, (radius * PI) as u32),
             immovable,
         }
     }
 }
 pub struct WorldSpace<'a> {
-    bodies: Vec<SpaceBody<'a>>,
+    pub bodies: Vec<SpaceBody<'a>>,
     dt: Time,
     gravity: f32,
     softening: f32,
+    trails: Vec<TrailPoint<'a>>,
 }
 
 impl PartialEq for SpaceBody<'_> {
@@ -105,6 +108,7 @@ impl From<BodySerializable> for SpaceBody<'_> {
             mass: other.mass,
             radius: other.radius,
             immovable: other.immovable,
+            next_trail: 10,
             shape: CircleShape::new(other.radius, (other.radius * PI) as u32),
         }
     }
@@ -126,6 +130,30 @@ impl WorldSpace<'_> {
             planet.yv += planet.ay * self.dt;
         }
     }
+    pub fn update_trails(&mut self) {
+        let mut temp = Vec::new();
+        for i in 0..self.trails.len() {
+            if self.trails[i].update() {
+                temp.push(i);
+            }
+        }
+        for a in temp {
+            self.trails.remove(a);
+        }
+        for planet in &mut self.bodies {
+            planet.next_trail -= 1;
+            if planet.next_trail < 1 {
+                planet.next_trail = 10;
+                self.trails
+                    .push(TrailPoint::new(planet.x, planet.y, planet.radius));
+            }
+        }
+    }
+    fn draw_trails(&self, target: &mut dyn RenderTarget) {
+        for point in &self.trails {
+            point.draw(target);
+        }
+    }
     pub fn update_acceleration(&mut self) {
         let len = self.bodies.len();
         for i in 0..len {
@@ -138,8 +166,7 @@ impl WorldSpace<'_> {
                     let dx = other.x - planet.x;
                     let dy = other.y - planet.y;
                     let squared = dx * dx + dy * dy;
-                    let f =
-                        (self.gravity * other.mass) / (squared * (squared + self.softening).sqrt());
+                    let f = (self.gravity * other.mass) / (squared.abs());
                     ax += dx * f;
                     ay += dy * f;
                 }
@@ -155,6 +182,7 @@ impl WorldSpace<'_> {
             gravity: 70.0,
             dt: 0.1,
             softening: 0.15,
+            trails: Vec::new(),
         }
     }
     pub fn draw<'a: 'shader, 'texture, 'shader, 'shader_texture>(
@@ -165,6 +193,7 @@ impl WorldSpace<'_> {
         for planet in &self.bodies {
             planet.shape.draw(target, states);
         }
+        self.draw_trails(target);
     }
     pub fn serialize<T: AsRef<Path>>(self, p: T) -> Result<(), Box<dyn Error>> {
         let serializable = WorldSpaceSerializable::from(self);
@@ -218,6 +247,7 @@ impl From<WorldSpaceSerializable> for WorldSpace<'_> {
             gravity: other.gravity,
             softening: other.softening,
             bodies: other.bodies.into_iter().map(SpaceBody::from).collect(),
+            trails: Vec::new(),
         }
     }
 }
