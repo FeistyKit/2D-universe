@@ -117,7 +117,7 @@ impl From<BodySerializable> for SpaceBody<'_> {
 }
 #[allow(unused)]
 impl WorldSpace<'_> {
-    pub fn update_positions(&mut self) {
+    fn update_positions(&mut self) {
         for planet in self.bodies.iter_mut() {
             if !planet.immovable {
                 planet.x += planet.xv * self.dt;
@@ -126,13 +126,13 @@ impl WorldSpace<'_> {
             planet.update_shape_position();
         }
     }
-    pub fn update_time(&mut self) {
+    fn update_time(&mut self) {
         for planet in self.bodies.iter_mut() {
             planet.xv += planet.ax * self.dt;
             planet.yv += planet.ay * self.dt;
         }
     }
-    pub fn update_trails(&mut self) {
+    fn update_trails(&mut self) {
         let mut temp = Vec::new();
         for i in 0..self.trails.len() {
             if self.trails[i].update() {
@@ -156,7 +156,7 @@ impl WorldSpace<'_> {
             point.draw(target);
         }
     }
-    pub fn update_acceleration(&mut self) {
+    fn update_acceleration(&mut self) {
         let len = self.bodies.len();
         for i in 0..len {
             let mut ax = 0.0;
@@ -178,7 +178,7 @@ impl WorldSpace<'_> {
             planet_mut.ay = ay;
         }
     }
-    pub fn with_bodies(bodies: Vec<SpaceBody>) -> WorldSpace {
+    fn with_bodies(bodies: Vec<SpaceBody>) -> WorldSpace {
         WorldSpace {
             bodies,
             gravity: 70.0,
@@ -188,7 +188,7 @@ impl WorldSpace<'_> {
             stopped: false,
         }
     }
-    pub fn draw<'a: 'shader, 'texture, 'shader, 'shader_texture>(
+    fn draw<'a: 'shader, 'texture, 'shader, 'shader_texture>(
         &'a self,
         target: &mut dyn RenderTarget,
         states: &RenderStates<'texture, 'shader, 'shader_texture>,

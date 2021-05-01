@@ -1,7 +1,7 @@
 mod bodies;
 mod trails;
 
-use bodies::{SpaceBody, WorldSpace};
+use bodies::WorldSpace;
 use sfml::{
     graphics::{Color, RenderTarget, RenderWindow},
     window::{Event, Key, Style},
