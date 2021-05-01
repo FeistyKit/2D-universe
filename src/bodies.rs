@@ -67,6 +67,7 @@ pub struct WorldSpace<'a> {
     gravity: f32,
     softening: f32,
     trails: Vec<TrailPoint<'a>>,
+    stopped: bool,
 }
 
 impl PartialEq for SpaceBody<'_> {
@@ -114,7 +115,7 @@ impl From<BodySerializable> for SpaceBody<'_> {
         }
     }
 }
-
+#[allow(unused)]
 impl WorldSpace<'_> {
     pub fn update_positions(&mut self) {
         for planet in self.bodies.iter_mut() {
@@ -184,6 +185,7 @@ impl WorldSpace<'_> {
             dt: 0.1,
             softening: 0.15,
             trails: Vec::new(),
+            stopped: false,
         }
     }
     pub fn draw<'a: 'shader, 'texture, 'shader, 'shader_texture>(
@@ -207,6 +209,34 @@ impl WorldSpace<'_> {
         let space = serde_json::from_str::<WorldSpaceSerializable>(&raw)?;
         Ok(WorldSpace::from(space))
     }
+    pub fn stop(&mut self) {
+        self.stopped = true;
+    }
+    pub fn unstop(&mut self) {
+        self.stopped = false;
+    }
+    pub fn switch_stopped(&mut self) {
+        self.stopped = !self.stopped;
+    }
+    pub fn is_stopped(&self) -> bool {
+        self.stopped
+    }
+    pub fn advance(&mut self, target: &mut dyn RenderTarget, states: &RenderStates) {
+        if !self.stopped {
+            self.update_acceleration();
+            self.update_positions();
+            self.update_time();
+            self.update_trails();
+        }
+        self.draw(target, states);
+    }
+}
+impl Default for WorldSpace<'_> {
+    fn default() -> Self {
+        let p1 = SpaceBody::new(800.0, 600.0, 50.0, 30.0, -50.0, 0.0, false);
+        let p2 = SpaceBody::new(800.0, 1000.0, 50.0, 30.0, 50.0, 0.0, false);
+        WorldSpace::with_bodies(vec![p1, p2])
+    }
 }
 #[derive(Debug, Serialize, Deserialize)]
 struct BodySerializable {
@@ -226,6 +256,7 @@ struct WorldSpaceSerializable {
     gravity: f32,
     softening: f32,
     bodies: Vec<BodySerializable>,
+    stopped: bool,
 }
 impl From<WorldSpace<'_>> for WorldSpaceSerializable {
     fn from(other: WorldSpace) -> Self {
@@ -238,6 +269,7 @@ impl From<WorldSpace<'_>> for WorldSpaceSerializable {
                 .into_iter()
                 .map(BodySerializable::from)
                 .collect(),
+            stopped: other.stopped,
         }
     }
 }
@@ -249,6 +281,7 @@ impl From<WorldSpaceSerializable> for WorldSpace<'_> {
             softening: other.softening,
             bodies: other.bodies.into_iter().map(SpaceBody::from).collect(),
             trails: Vec::new(),
+            stopped: other.stopped,
         }
     }
 }
