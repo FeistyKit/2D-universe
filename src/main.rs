@@ -19,6 +19,7 @@ fn main() {
         Style::CLOSE,
         &Default::default(),
     );
+    let mut stop = false;
     window.set_framerate_limit(45);
     'running: while window.is_open() {
         while let Some(event) = window.poll_event() {
@@ -37,15 +38,23 @@ fn main() {
                     window.close();
                     space.serialize("space.json").unwrap();
                     break 'running;
+                } else if code == Key::A {
+                    println!("{:?}", window.mouse_position());
+                } else if code == Key::F {
+                    stop = !stop;
+                } else if code == Key::G {
+                    println!("{:?}", space);
                 }
             }
         }
         window.set_active(true);
         window.clear(Color::BLACK);
-        space.update_acceleration();
-        space.update_positions();
-        space.update_time();
-        space.update_trails();
+        if !stop {
+            space.update_acceleration();
+            space.update_positions();
+            space.update_time();
+            space.update_trails();
+        }
         space.draw(&mut window, &Default::default());
         window.display();
     }

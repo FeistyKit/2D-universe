@@ -3,9 +3,8 @@ use sfml::{
     system::Vector2f,
 };
 pub const DEATH_AGE: usize = 100;
+#[derive(Debug)]
 pub struct TrailPoint<'a> {
-    x: f32,
-    y: f32,
     age: usize,
     circle: CircleShape<'a>,
 }
@@ -17,16 +16,8 @@ impl TrailPoint<'_> {
     pub fn new(x: f32, y: f32, other_radius: f32) -> Self {
         let radius = 5.0;
         let mut circle = CircleShape::new(radius, 20);
-        circle.set_position(Vector2f::new(
-            x - other_radius + radius,
-            y - other_radius + radius,
-        ));
-        TrailPoint {
-            x: x - other_radius,
-            y: y - other_radius,
-            age: 0,
-            circle,
-        }
+        circle.set_position(Vector2f::new(x, y));
+        TrailPoint { age: 0, circle }
     }
     pub fn update(&mut self) -> bool {
         self.age += 1;

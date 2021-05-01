@@ -60,6 +60,7 @@ impl SpaceBody<'_> {
         }
     }
 }
+#[derive(Debug)]
 pub struct WorldSpace<'a> {
     pub bodies: Vec<SpaceBody<'a>>,
     dt: Time,
@@ -145,7 +146,7 @@ impl WorldSpace<'_> {
             if planet.next_trail < 1 {
                 planet.next_trail = 10;
                 self.trails
-                    .push(TrailPoint::new(planet.x, planet.y, planet.radius));
+                    .push(TrailPoint::new(planet.x, planet.y, planet.shape.radius()));
             }
         }
     }
