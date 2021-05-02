@@ -5,17 +5,19 @@ mod trails;
 use bodies::WorldSpace;
 use sfml::{
     graphics::{Color, Font, RenderTarget, RenderWindow},
-    system::Vector2,
+    system::{Vector2, Vector2f},
     window::{mouse::Button, Event, Key, Style},
 };
 use std::f32::consts::PI;
 const CONSOLAS_BYTES: &[u8] = include_bytes!("assets/Consolas.ttf");
+pub const WINDOW_SIZE: (f32, f32) = (1600.0, 1600.0);
 
 use crate::gui::Gui;
 fn main() {
     let mut space = WorldSpace::deserialize("space.json").unwrap_or_default();
+    space.focused_idx = Some(0);
     let mut window = RenderWindow::new(
-        (1600, 1600),
+        (WINDOW_SIZE.0 as u32, WINDOW_SIZE.1 as u32),
         "Universe simulator",
         Style::CLOSE,
         &Default::default(),
@@ -40,11 +42,29 @@ fn main() {
                     space.serialize("space.json").unwrap();
                     break 'running;
                 } else if code == Key::A {
-                    println!("{:?}", window.mouse_position());
+                    println!(
+                        "{:?}, {:?}, {:?}, {:?}",
+                        {
+                            let pos = window.mouse_position();
+                            let x = pos.x as f32 + space.cam_pos.x;
+                            let y = pos.y as f32 + space.cam_pos.y;
+                            (x, y)
+                        },
+                        (
+                            space.bodies[space.focused_idx.unwrap()].x,
+                            space.bodies[space.focused_idx.unwrap()].y
+                        ),
+                        space.cam_pos,
+                        (
+                            space.bodies[space.focused_idx.unwrap()].x + space.cam_pos.x,
+                            space.bodies[space.focused_idx.unwrap()].y + space.cam_pos.y
+                        )
+                    );
                 } else if code == Key::F {
                     space.switch_stopped();
                 } else if code == Key::G {
-                    println!("{:?}", space);
+                    space.focused_idx = Some(0);
+                    println!("G was pressed, {:?}", space.cam_pos);
                 }
             } else if let Event::MouseButtonPressed { button, x, y } = event {
                 if button == Button::LEFT {

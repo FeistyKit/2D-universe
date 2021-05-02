@@ -5,7 +5,7 @@ use std::{
     path::Path,
 };
 
-use crate::{trails::TrailPoint, PI};
+use crate::{trails::TrailPoint, PI, WINDOW_SIZE};
 use serde::{Deserialize, Serialize};
 use sfml::{
     graphics::{CircleShape, Color, Drawable, RenderStates, RenderTarget, Shape, Transformable},
@@ -15,8 +15,8 @@ use sfml::{
 type Time = f32;
 #[derive(Debug)]
 pub struct SpaceBody<'a> {
-    x: f32,
-    y: f32,
+    pub x: f32,
+    pub y: f32,
     xv: f32,
     yv: f32,
     ax: f32,
@@ -28,9 +28,11 @@ pub struct SpaceBody<'a> {
     immovable: bool,
 }
 impl SpaceBody<'_> {
-    pub fn update_shape_position(&mut self) {
-        self.shape
-            .set_position(Vector2f::new(self.x - self.radius, self.y - self.radius));
+    pub fn update_shape_position(&mut self, cam_pos: &Vector2f) {
+        self.shape.set_position(Vector2f::new(
+            self.x - self.radius + cam_pos.x,
+            self.y - self.radius + cam_pos.y,
+        ));
         let error_margin = 0.1;
         if (self.radius - self.shape.radius()).abs() > error_margin {
             self.shape.set_radius(self.radius);
@@ -66,12 +68,14 @@ impl SpaceBody<'_> {
 }
 #[derive(Debug)]
 pub struct WorldSpace<'a> {
-    bodies: Vec<SpaceBody<'a>>,
+    pub bodies: Vec<SpaceBody<'a>>,
     dt: Time,
     gravity: f32,
     softening: f32,
     trails: Vec<TrailPoint<'a>>,
     stopped: bool,
+    pub cam_pos: Vector2f,
+    pub focused_idx: Option<usize>,
 }
 
 impl PartialEq for SpaceBody<'_> {
@@ -137,13 +141,22 @@ impl<'a> WorldSpace<'a> {
                 planet.x += planet.xv * self.dt;
                 planet.y += planet.yv * self.dt;
             }
-            planet.update_shape_position();
+            planet.update_shape_position(&self.cam_pos);
         }
     }
     fn update_time(&mut self) {
         for planet in self.bodies.iter_mut() {
             planet.xv += planet.ax * self.dt;
             planet.yv += planet.ay * self.dt;
+        }
+    }
+    fn update_cam_pos(&mut self) {
+        if self.focused_idx.is_some() {
+            let body = &self.bodies[self.focused_idx.unwrap()];
+            self.cam_pos =
+                Vector2f::new(body.x - WINDOW_SIZE.0 / 2.0, body.y - WINDOW_SIZE.1 / 2.0);
+        } else {
+            self.cam_pos = Vector2f::new(0.0, 0.0);
         }
     }
     fn update_trails(&mut self) {
@@ -164,9 +177,9 @@ impl<'a> WorldSpace<'a> {
             }
         }
     }
-    fn draw_trails(&self, target: &mut dyn RenderTarget) {
-        for point in &self.trails {
-            point.draw(target);
+    fn draw_trails(&mut self, target: &mut dyn RenderTarget) {
+        for point in &mut self.trails {
+            point.draw(target, self.cam_pos);
         }
     }
     fn update_acceleration(&mut self) {
@@ -199,10 +212,12 @@ impl<'a> WorldSpace<'a> {
             softening: 0.15,
             trails: Vec::new(),
             stopped: false,
+            cam_pos: Vector2f::new(0.0, 0.0),
+            focused_idx: None,
         }
     }
     fn draw<'b: 'shader, 'texture, 'shader, 'shader_texture>(
-        &'b self,
+        &'b mut self,
         target: &mut dyn RenderTarget,
         states: &RenderStates<'texture, 'shader, 'shader_texture>,
     ) {
@@ -240,6 +255,7 @@ impl<'a> WorldSpace<'a> {
             self.update_positions();
             self.update_time();
             self.update_trails();
+            self.update_cam_pos();
         }
         self.draw(target, states);
     }
@@ -282,6 +298,8 @@ struct WorldSpaceSerializable {
     softening: f32,
     bodies: Vec<BodySerializable>,
     stopped: bool,
+    cam_pos: (f32, f32),
+    focused_idx: Option<usize>,
 }
 impl From<WorldSpace<'_>> for WorldSpaceSerializable {
     fn from(other: WorldSpace) -> Self {
@@ -295,6 +313,8 @@ impl From<WorldSpace<'_>> for WorldSpaceSerializable {
                 .map(BodySerializable::from)
                 .collect(),
             stopped: other.stopped,
+            cam_pos: (other.cam_pos.x, other.cam_pos.y),
+            focused_idx: other.focused_idx,
         }
     }
 }
@@ -307,6 +327,8 @@ impl From<WorldSpaceSerializable> for WorldSpace<'_> {
             bodies: other.bodies.into_iter().map(SpaceBody::from).collect(),
             trails: Vec::new(),
             stopped: other.stopped,
+            cam_pos: Vector2f::new(other.cam_pos.0, other.cam_pos.1),
+            focused_idx: other.focused_idx,
         }
     }
 }
