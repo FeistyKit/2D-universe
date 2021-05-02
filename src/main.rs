@@ -4,10 +4,12 @@ mod trails;
 
 use bodies::WorldSpace;
 use sfml::{
-    graphics::{Color, RenderTarget, RenderWindow, Transformable},
+    graphics::{Color, Font, RenderTarget, RenderWindow},
     window::{Event, Key, Style},
+    SfBox,
 };
-use std::f32::consts::PI;
+use std::{error::Error, f32::consts::PI, fs};
+const CONSOLAS_BYTES: &[u8] = include_bytes!("assets/Consolas.ttf");
 
 use crate::gui::Gui;
 fn main() {
@@ -19,7 +21,10 @@ fn main() {
         &Default::default(),
     );
     window.set_framerate_limit(45);
-    let gui = Gui::new(window.size());
+    let gui = Gui::new(
+        window.size(),
+        font_from_file().unwrap_or_else(|_| Font::from_memory(CONSOLAS_BYTES).unwrap()),
+    );
     'running: while window.is_open() {
         while let Some(event) = window.poll_event() {
             if event == Event::Closed {
@@ -54,4 +59,19 @@ fn main() {
         gui.draw(&mut window);
         window.display();
     }
+}
+pub fn font_from_file() -> Result<SfBox<Font>, Box<dyn Error>> {
+    for file in fs::read_dir("./")? {
+        let os_name = file?.file_name();
+        let name = os_name.to_string_lossy();
+        if name.ends_with(".ttf") {
+            if let Some(font) = Font::from_file(&name) {
+                return Ok(font);
+            }
+        }
+    }
+    Err(Box::new(std::io::Error::new(
+        std::io::ErrorKind::Other,
+        "not found",
+    )))
 }

@@ -89,6 +89,7 @@ impl PartialEq for SpaceBody<'_> {
 
 impl From<SpaceBody<'_>> for BodySerializable {
     fn from(other: SpaceBody<'_>) -> Self {
+        let other_color = other.shape.fill_color();
         BodySerializable {
             x: other.x,
             y: other.y,
@@ -99,6 +100,7 @@ impl From<SpaceBody<'_>> for BodySerializable {
             mass: other.mass,
             radius: other.radius,
             immovable: other.immovable,
+            color_rgb: (other_color.red(), other_color.green(), other_color.blue()),
         }
     }
 }
@@ -115,7 +117,15 @@ impl From<BodySerializable> for SpaceBody<'_> {
             radius: other.radius,
             immovable: other.immovable,
             next_trail: 10,
-            shape: CircleShape::new(other.radius, (other.radius * PI) as u32),
+            shape: {
+                let mut c = CircleShape::new(other.radius, (other.radius * PI) as u32);
+                c.set_fill_color(Color::rgb(
+                    other.color_rgb.0,
+                    other.color_rgb.1,
+                    other.color_rgb.2,
+                ));
+                c
+            },
         }
     }
 }
@@ -260,6 +270,7 @@ struct BodySerializable {
     mass: f32,
     radius: f32,
     immovable: bool,
+    color_rgb: (u8, u8, u8),
 }
 #[derive(Debug, Serialize, Deserialize)]
 struct WorldSpaceSerializable {
