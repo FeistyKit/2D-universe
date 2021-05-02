@@ -66,7 +66,7 @@ impl SpaceBody<'_> {
 }
 #[derive(Debug)]
 pub struct WorldSpace<'a> {
-    pub bodies: Vec<SpaceBody<'a>>,
+    bodies: Vec<SpaceBody<'a>>,
     dt: Time,
     gravity: f32,
     softening: f32,
@@ -130,7 +130,7 @@ impl From<BodySerializable> for SpaceBody<'_> {
     }
 }
 #[allow(unused)]
-impl WorldSpace<'_> {
+impl<'a> WorldSpace<'a> {
     fn update_positions(&mut self) {
         for planet in self.bodies.iter_mut() {
             if !planet.immovable {
@@ -191,7 +191,7 @@ impl WorldSpace<'_> {
             planet_mut.ay = ay;
         }
     }
-    fn with_bodies(bodies: Vec<SpaceBody>) -> WorldSpace {
+    pub fn with_bodies(bodies: Vec<SpaceBody>) -> WorldSpace {
         WorldSpace {
             bodies,
             gravity: 70.0,
@@ -201,8 +201,8 @@ impl WorldSpace<'_> {
             stopped: false,
         }
     }
-    fn draw<'a: 'shader, 'texture, 'shader, 'shader_texture>(
-        &'a self,
+    fn draw<'b: 'shader, 'texture, 'shader, 'shader_texture>(
+        &'b self,
         target: &mut dyn RenderTarget,
         states: &RenderStates<'texture, 'shader, 'shader_texture>,
     ) {
@@ -217,7 +217,7 @@ impl WorldSpace<'_> {
         File::create(p)?.write_all(serialized.as_bytes())?;
         Ok(())
     }
-    pub fn deserialize<'a, T: AsRef<Path>>(p: T) -> Result<WorldSpace<'a>, Box<dyn Error>> {
+    pub fn deserialize<'b, T: AsRef<Path>>(p: T) -> Result<WorldSpace<'b>, Box<dyn Error>> {
         let raw = read_to_string(p)?;
         let space = serde_json::from_str::<WorldSpaceSerializable>(&raw)?;
         Ok(WorldSpace::from(space))
@@ -242,6 +242,9 @@ impl WorldSpace<'_> {
             self.update_trails();
         }
         self.draw(target, states);
+    }
+    pub fn push_body(&mut self, body: SpaceBody<'a>) {
+        self.bodies.push(body);
     }
 }
 impl Default for WorldSpace<'_> {

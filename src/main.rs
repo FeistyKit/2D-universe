@@ -5,10 +5,10 @@ mod trails;
 use bodies::WorldSpace;
 use sfml::{
     graphics::{Color, Font, RenderTarget, RenderWindow},
-    window::{Event, Key, Style},
-    SfBox,
+    system::Vector2,
+    window::{mouse::Button, Event, Key, Style},
 };
-use std::{error::Error, f32::consts::PI, fs};
+use std::f32::consts::PI;
 const CONSOLAS_BYTES: &[u8] = include_bytes!("assets/Consolas.ttf");
 
 use crate::gui::Gui;
@@ -27,8 +27,7 @@ fn main() {
         while let Some(event) = window.poll_event() {
             if event == Event::Closed {
                 window.close();
-            }
-            if let Event::KeyPressed {
+            } else if let Event::KeyPressed {
                 code,
                 alt: _,
                 ctrl: _,
@@ -47,29 +46,16 @@ fn main() {
                 } else if code == Key::G {
                     println!("{:?}", space);
                 }
+            } else if let Event::MouseButtonPressed { button, x, y } = event {
+                if button == Button::LEFT {
+                    gui.click(&mut space, Vector2::new(x, y));
+                }
             }
         }
         window.set_active(true);
         window.clear(Color::BLACK);
-
-        assert!(gui.held_position.is_none());
         space.advance(&mut window, &Default::default());
-        gui.draw(&mut window);
+        gui.update_draw(&mut window);
         window.display();
     }
-}
-pub fn font_from_file() -> Result<SfBox<Font>, Box<dyn Error>> {
-    for file in fs::read_dir("./")? {
-        let os_name = file?.file_name();
-        let name = os_name.to_string_lossy();
-        if name.ends_with(".ttf") {
-            if let Some(font) = Font::from_file(&name) {
-                return Ok(font);
-            }
-        }
-    }
-    Err(Box::new(std::io::Error::new(
-        std::io::ErrorKind::Other,
-        "not found",
-    )))
 }
