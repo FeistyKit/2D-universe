@@ -21,10 +21,8 @@ fn main() {
         &Default::default(),
     );
     window.set_framerate_limit(45);
-    let gui = Gui::new(
-        window.size(),
-        font_from_file().unwrap_or_else(|_| Font::from_memory(CONSOLAS_BYTES).unwrap()),
-    );
+    let consolas = Font::from_memory(CONSOLAS_BYTES).unwrap();
+    let mut gui = Gui::new(window.size(), &consolas);
     'running: while window.is_open() {
         while let Some(event) = window.poll_event() {
             if event == Event::Closed {

@@ -10,12 +10,13 @@ pub struct Gui<'a> {
     pub held_position: Option<Vector2f>,
     radius: f32,
     size: Vector2<u32>,
-    font: SfBox<Font>,
+    font: &'a SfBox<Font>,
     mass: f32,
+    text: Option<Text<'a>>,
 }
 
-impl Gui<'_> {
-    pub fn new(size: Vector2<u32>, font: SfBox<Font>) -> Self {
+impl<'a> Gui<'a> {
+    pub fn new(size: Vector2<u32>, font: &'a SfBox<Font>) -> Self {
         let mut circle = CircleShape::new(30.0, 100);
         let default_radius = 30;
         circle.set_position((
@@ -29,14 +30,25 @@ impl Gui<'_> {
             size,
             font,
             mass: 30.0,
+            text: None,
         }
     }
-    pub fn draw(&self, target: &mut dyn RenderTarget) {
+    pub fn draw(&mut self, target: &mut dyn RenderTarget) {
         if self.held_position.is_none() {
             self.example_planet.draw(target, &Default::default());
         }
-
-        let text = Text::new(&self.mass.to_string(), &self.font, 30);
-        text.draw(target, &Default::default());
+        if self.text.is_none() {
+            self.text = Some(Text::new(&self.mass.to_string(), &self.font, 30));
+        }
+        if self.text.as_ref().unwrap().string().to_rust_string() != self.mass.to_string() {
+            self.text
+                .as_mut()
+                .unwrap()
+                .set_string(&self.mass.to_string());
+        }
+        self.text
+            .as_ref()
+            .unwrap()
+            .draw(target, &Default::default());
     }
 }
