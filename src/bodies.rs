@@ -30,8 +30,8 @@ pub struct SpaceBody<'a> {
 impl SpaceBody<'_> {
     pub fn update_shape_position(&mut self, cam_pos: &Vector2f) {
         self.shape.set_position(Vector2f::new(
-            self.x - self.radius + cam_pos.x,
-            self.y - self.radius + cam_pos.y,
+            self.x - self.radius - cam_pos.x + WINDOW_SIZE.0 / 2.0,
+            self.y - self.radius - cam_pos.y + WINDOW_SIZE.1 / 2.0,
         ));
         let error_margin = 0.1;
         if (self.radius - self.shape.radius()).abs() > error_margin {
@@ -64,6 +64,9 @@ impl SpaceBody<'_> {
             },
             immovable,
         }
+    }
+    pub fn pos2f(&self) -> Vector2f {
+        Vector2f::new(self.x, self.y)
     }
 }
 #[derive(Debug)]
@@ -153,8 +156,7 @@ impl<'a> WorldSpace<'a> {
     fn update_cam_pos(&mut self) {
         if self.focused_idx.is_some() {
             let body = &self.bodies[self.focused_idx.unwrap()];
-            self.cam_pos =
-                Vector2f::new(body.x - WINDOW_SIZE.0 / 2.0, body.y - WINDOW_SIZE.1 / 2.0);
+            self.cam_pos = body.pos2f();
         } else {
             self.cam_pos = Vector2f::new(0.0, 0.0);
         }
@@ -258,6 +260,9 @@ impl<'a> WorldSpace<'a> {
             self.update_cam_pos();
         }
         self.draw(target, states);
+        if self.focused_idx.is_some() {
+            let body = &self.bodies[self.focused_idx.unwrap()];
+        }
     }
     pub fn push_body(&mut self, body: SpaceBody<'a>) {
         self.bodies.push(body);
@@ -265,9 +270,17 @@ impl<'a> WorldSpace<'a> {
 }
 impl Default for WorldSpace<'_> {
     fn default() -> Self {
-        let p1 = SpaceBody::new((800.0, 600.0), 50.0, 30.0, -50.0, 0.0, false, Color::WHITE);
+        let p1 = SpaceBody::new(
+            (WINDOW_SIZE.0 / 2.0, WINDOW_SIZE.1 * 3.0 / 4.0),
+            50.0,
+            30.0,
+            -50.0,
+            0.0,
+            false,
+            Color::WHITE,
+        );
         let p2 = SpaceBody::new(
-            (800.0, 1000.0),
+            (WINDOW_SIZE.0 / 2.0, WINDOW_SIZE.1 * 5.0 / 8.0),
             50.0,
             30.0,
             50.0,

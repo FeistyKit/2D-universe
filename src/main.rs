@@ -5,7 +5,7 @@ mod trails;
 use bodies::WorldSpace;
 use sfml::{
     graphics::{Color, Font, RenderTarget, RenderWindow},
-    system::{Vector2, Vector2f},
+    system::Vector2,
     window::{mouse::Button, Event, Key, Style},
 };
 use std::f32::consts::PI;

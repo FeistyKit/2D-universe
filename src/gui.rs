@@ -11,7 +11,10 @@ use sfml::{
     SfBox,
 };
 
-use crate::bodies::{SpaceBody, WorldSpace};
+use crate::{
+    bodies::{SpaceBody, WorldSpace},
+    WINDOW_SIZE,
+};
 
 #[derive(Debug)]
 pub struct Gui<'a> {
@@ -72,7 +75,10 @@ impl<'a> Gui<'a> {
         let adj_pos_y = mouse_pos.y as f32;
         if self.held_position.is_some() {
             space.push_body(SpaceBody::new(
-                (adj_pos_x, adj_pos_y),
+                (
+                    adj_pos_x + space.cam_pos.x - WINDOW_SIZE.0 / 2.0,
+                    adj_pos_y + space.cam_pos.y - WINDOW_SIZE.1 / 2.0,
+                ),
                 self.mass,
                 self.radius,
                 (mouse_pos.x as f32 - self.held_position.unwrap().x) / 5.0,
