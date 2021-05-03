@@ -24,7 +24,7 @@ pub struct SpaceBody<'a> {
     mass: f32,
     radius: f32,
     next_trail: usize,
-    shape: CircleShape<'a>,
+    pub shape: CircleShape<'a>,
     immovable: bool,
 }
 impl SpaceBody<'_> {
@@ -266,6 +266,25 @@ impl<'a> WorldSpace<'a> {
     }
     pub fn push_body(&mut self, body: SpaceBody<'a>) {
         self.bodies.push(body);
+    }
+    pub fn prepare_for_gui(&self) -> Option<(CircleShape<'a>, usize)> {
+        if let Some(index) = self.focused_idx {
+            Some((self.bodies[index].shape.clone(), index))
+        } else {
+            None
+        }
+    }
+    pub fn advance_focused_idx(&mut self) {
+        let max = self.bodies.len() - 1;
+        if let Some(index) = self.focused_idx {
+            if index < max {
+                self.focused_idx = Some(index + 1);
+            } else {
+                self.focused_idx = None;
+            }
+        } else {
+            self.focused_idx = Some(0);
+        }
     }
 }
 impl Default for WorldSpace<'_> {

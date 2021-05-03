@@ -76,6 +76,7 @@ fn main() {
         window.clear(Color::BLACK);
         space.advance(&mut window, &Default::default());
         gui.update_draw(&mut window);
+        gui.update_draw_focused_display(space.prepare_for_gui(), &mut window);
         window.display();
     }
 }

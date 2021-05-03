@@ -26,6 +26,8 @@ pub struct Gui<'a> {
     mass: f32,
     text: Option<Text<'a>>,
     trail_line: Option<[GuideLinePoint<'a>; 10]>,
+    focused_planet: Option<CircleShape<'a>>,
+    focused_number_display: Option<Text<'a>>,
 }
 
 impl<'a> Gui<'a> {
@@ -45,6 +47,8 @@ impl<'a> Gui<'a> {
             mass: 30.0,
             text: None,
             trail_line: None,
+            focused_planet: None,
+            focused_number_display: None,
         }
     }
     pub fn update_draw(&mut self, target: &mut RenderWindow) {
@@ -119,6 +123,26 @@ impl<'a> Gui<'a> {
     fn draw_guideline(&self, target: &mut dyn RenderTarget) {
         for i in self.trail_line.as_ref().unwrap().iter() {
             i.draw(target, &Default::default());
+        }
+    }
+    pub fn update_draw_focused_display(
+        &mut self,
+        opt: Option<(CircleShape<'a>, usize)>,
+        target: &mut dyn RenderTarget,
+    ) {
+        if let Some(pair) = opt {
+            let mut shape = pair.0;
+            let index = pair.1;
+            shape.set_position((WINDOW_SIZE.0 - shape.radius() * 3.0, 0.0));
+            let mut text = Text::new(&format!("#{}", index + 1), self.font, 50);
+            text.set_position((WINDOW_SIZE.0 - 3.0 * shape.radius(), shape.radius() + 30.0));
+            self.focused_number_display = Some(text);
+            self.focused_planet = Some(shape);
+            target.draw(self.focused_number_display.as_ref().unwrap());
+            target.draw(self.focused_planet.as_ref().unwrap());
+        } else {
+            self.focused_planet = None;
+            self.focused_number_display = None;
         }
     }
 }
