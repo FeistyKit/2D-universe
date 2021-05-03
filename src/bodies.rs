@@ -144,6 +144,10 @@ impl<'a> WorldSpace<'a> {
                 planet.x += planet.xv * self.dt;
                 planet.y += planet.yv * self.dt;
             }
+        }
+    }
+    fn update_planets_shape_pos(&mut self) {
+        for planet in &mut self.bodies {
             planet.update_shape_position(&self.cam_pos);
         }
     }
@@ -257,12 +261,10 @@ impl<'a> WorldSpace<'a> {
             self.update_positions();
             self.update_time();
             self.update_trails();
-            self.update_cam_pos();
         }
+        self.update_cam_pos();
+        self.update_planets_shape_pos();
         self.draw(target, states);
-        if self.focused_idx.is_some() {
-            let body = &self.bodies[self.focused_idx.unwrap()];
-        }
     }
     pub fn push_body(&mut self, body: SpaceBody<'a>) {
         self.bodies.push(body);

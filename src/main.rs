@@ -41,30 +41,13 @@ fn main() {
                     window.close();
                     space.serialize("space.json").unwrap();
                     break 'running;
-                } else if code == Key::A {
-                    println!(
-                        "{:?}, {:?}, {:?}, {:?}",
-                        {
-                            let pos = window.mouse_position();
-                            let x = pos.x as f32 + space.cam_pos.x;
-                            let y = pos.y as f32 + space.cam_pos.y;
-                            (x, y)
-                        },
-                        (
-                            space.bodies[space.focused_idx.unwrap()].x,
-                            space.bodies[space.focused_idx.unwrap()].y
-                        ),
-                        space.cam_pos,
-                        (
-                            space.bodies[space.focused_idx.unwrap()].x + space.cam_pos.x,
-                            space.bodies[space.focused_idx.unwrap()].y + space.cam_pos.y
-                        )
-                    );
                 } else if code == Key::F {
                     space.switch_stopped();
                 } else if code == Key::G {
                     space.focused_idx = Some(0);
-                    println!("G was pressed, {:?}", space.cam_pos);
+                    println!("You found my dev key!");
+                } else if code == Key::RIGHT {
+                    space.advance_focused_idx();
                 }
             } else if let Event::MouseButtonPressed { button, x, y } = event {
                 if button == Button::LEFT {

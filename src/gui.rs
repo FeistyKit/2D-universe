@@ -142,7 +142,13 @@ impl<'a> Gui<'a> {
             target.draw(self.focused_planet.as_ref().unwrap());
         } else {
             self.focused_planet = None;
-            self.focused_number_display = None;
+            self.focused_number_display = {
+                let mut text = Text::new("No planet selected.", self.font, 30);
+                text.set_position((WINDOW_SIZE.0 - 350.0, 0.0));
+                text.set_fill_color(Color::WHITE);
+                Some(text)
+            };
+            target.draw(self.focused_number_display.as_ref().unwrap());
         }
     }
 }
