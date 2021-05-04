@@ -27,32 +27,9 @@ fn main() {
     let mut gui = Gui::new(window.size(), &consolas);
     'running: while window.is_open() {
         while let Some(event) = window.poll_event() {
-            if event == Event::Closed {
-                window.close();
-            } else if let Event::KeyPressed {
-                code,
-                alt: _,
-                ctrl: _,
-                shift: _,
-                system: _,
-            } = event
-            {
-                if code == Key::S {
-                    window.close();
-                    space.serialize("space.json").unwrap();
-                    break 'running;
-                } else if code == Key::F {
-                    space.switch_stopped();
-                } else if code == Key::G {
-                    space.focused_idx = Some(0);
-                    println!("You found my dev key!");
-                } else if code == Key::RIGHT {
-                    space.advance_focused_idx();
-                }
-            } else if let Event::MouseButtonPressed { button, x, y } = event {
-                if button == Button::LEFT {
-                    gui.click(&mut space, Vector2::new(x, y));
-                }
+            if handle_events(event, &mut window, &mut space, &mut gui) {
+                space.serialize("space.json").unwrap();
+                break 'running;
             }
         }
         window.set_active(true);
@@ -62,4 +39,43 @@ fn main() {
         gui.update_draw_focused_display(space.prepare_for_gui(), &mut window);
         window.display();
     }
+}
+
+fn handle_events(
+    event: Event,
+    window: &mut RenderWindow,
+    space: &mut WorldSpace,
+    gui: &mut Gui,
+) -> bool {
+    if event == Event::Closed {
+        window.close();
+    } else if let Event::KeyPressed {
+        code,
+        alt: _,
+        ctrl: _,
+        shift: _,
+        system: _,
+    } = event
+    {
+        if code == Key::S {
+            window.close();
+            return true;
+        } else if code == Key::F {
+            space.switch_stopped();
+        } else if code == Key::G {
+            space.focused_idx = Some(0);
+            println!("You found my dev key! {:?}", space.cam_pos);
+        } else if code == Key::RIGHT {
+            space.advance_focused_idx();
+        } else if code == Key::UP {
+            gui.increase_example_mass();
+        } else if code == Key::DOWN {
+            gui.decrease_example_mass();
+        }
+    } else if let Event::MouseButtonPressed { button, x, y } = event {
+        if button == Button::LEFT {
+            gui.click(space, Vector2::new(x, y));
+        }
+    }
+    false
 }

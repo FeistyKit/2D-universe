@@ -162,7 +162,7 @@ impl<'a> WorldSpace<'a> {
             let body = &self.bodies[self.focused_idx.unwrap()];
             self.cam_pos = body.pos2f();
         } else {
-            self.cam_pos = Vector2f::new(0.0, 0.0);
+            self.cam_pos = Vector2f::new(WINDOW_SIZE.0 / 2.0, WINDOW_SIZE.1 * 0.5);
         }
     }
     fn update_trails(&mut self) {
@@ -218,7 +218,7 @@ impl<'a> WorldSpace<'a> {
             softening: 0.15,
             trails: Vec::new(),
             stopped: false,
-            cam_pos: Vector2f::new(0.0, 0.0),
+            cam_pos: Vector2f::new(WINDOW_SIZE.0 / 2.0, WINDOW_SIZE.1 * 0.5),
             focused_idx: None,
         }
     }

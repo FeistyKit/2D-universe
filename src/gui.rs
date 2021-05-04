@@ -151,6 +151,12 @@ impl<'a> Gui<'a> {
             target.draw(self.focused_number_display.as_ref().unwrap());
         }
     }
+    pub fn increase_example_mass(&mut self) {
+        self.mass += 5.0;
+    }
+    pub fn decrease_example_mass(&mut self) {
+        self.mass -= 5.0;
+    }
 }
 #[derive(Debug)]
 struct GuideLinePoint<'a> {
