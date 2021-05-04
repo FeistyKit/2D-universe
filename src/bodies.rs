@@ -174,8 +174,6 @@ impl<'a> WorldSpace<'a> {
         if self.focused_idx.is_some() {
             let body = &self.bodies[self.focused_idx.unwrap()];
             self.cam_pos = body.pos2f();
-        } else {
-            self.cam_pos = Vector2f::new(WINDOW_SIZE.0 / 2.0, WINDOW_SIZE.1 * 0.5);
         }
     }
     pub fn clear_bodies(&mut self) {
@@ -303,6 +301,18 @@ impl<'a> WorldSpace<'a> {
             }
         } else {
             self.focused_idx = Some(0);
+        }
+    }
+    pub fn reduce_focused_index(&mut self) {
+        let max = self.bodies.len() - 1;
+        if let Some(index) = self.focused_idx {
+            if index > 0 {
+                self.focused_idx = Some(index - 1);
+            } else {
+                self.focused_idx = None;
+            }
+        } else {
+            self.focused_idx = Some(max);
         }
     }
 }

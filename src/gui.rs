@@ -1,4 +1,3 @@
-use sfml::system::SfBox;
 use std::{
     convert::TryInto,
     ops::{Deref, DerefMut},
@@ -8,7 +7,7 @@ use sfml::{
     graphics::{
         CircleShape, Color, Drawable, Font, RenderTarget, RenderWindow, Shape, Text, Transformable,
     },
-    system::{Vector2, Vector2f},
+    system::{SfBox, Vector2, Vector2f},
 };
 
 use crate::{

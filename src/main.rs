@@ -74,6 +74,8 @@ fn handle_events(
             gui.decrease_example_mass();
         } else if code == Key::C {
             space.clear_bodies();
+        } else if code == Key::Left {
+            space.reduce_focused_index();
         }
     } else if let Event::MouseButtonPressed { button, x, y } = event {
         if button == Button::Left {
