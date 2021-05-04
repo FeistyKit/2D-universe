@@ -76,6 +76,8 @@ fn handle_events(
             space.clear_bodies();
         } else if code == Key::Left {
             space.reduce_focused_index();
+        } else if code == Key::Delete || code == Key::BackSpace {
+            space.remove_selected();
         }
     } else if let Event::MouseButtonPressed { button, x, y } = event {
         if button == Button::Left {

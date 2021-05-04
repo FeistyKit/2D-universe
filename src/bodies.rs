@@ -142,7 +142,6 @@ impl From<BodySerializable> for SpaceBody<'_> {
         }
     }
 }
-#[allow(unused)]
 impl<'a> WorldSpace<'a> {
     pub fn validate(&self) {
         if !self.bodies.is_empty() {
@@ -181,13 +180,13 @@ impl<'a> WorldSpace<'a> {
         self.focused_idx = None;
     }
     fn update_trails(&mut self) {
-        let mut temp = Vec::new();
+        let mut temp = 0;
         for i in 0..self.trails.len() {
             if self.trails[i].update() {
-                temp.push(i);
+                temp += 1;
             }
         }
-        for a in temp {
+        for _ in 0..temp {
             self.trails.remove(0);
         }
         for planet in &mut self.bodies {
@@ -258,17 +257,8 @@ impl<'a> WorldSpace<'a> {
         let space = serde_json::from_str::<WorldSpaceSerializable>(&raw)?;
         Ok(WorldSpace::from(space))
     }
-    pub fn stop(&mut self) {
-        self.stopped = true;
-    }
-    pub fn unstop(&mut self) {
-        self.stopped = false;
-    }
     pub fn switch_stopped(&mut self) {
         self.stopped = !self.stopped;
-    }
-    pub fn is_stopped(&self) -> bool {
-        self.stopped
     }
     pub fn advance(&mut self, target: &mut dyn RenderTarget, states: &RenderStates) {
         if !self.stopped {
@@ -313,6 +303,17 @@ impl<'a> WorldSpace<'a> {
             }
         } else {
             self.focused_idx = Some(max);
+        }
+    }
+    pub fn remove_selected(&mut self) {
+        if let Some(index) = self.focused_idx {
+            self.bodies.remove(index);
+            for planet in &mut self.bodies[index..] {
+                planet.index -= 1;
+            }
+            if self.bodies.is_empty() {
+                self.focused_idx = None;
+            }
         }
     }
 }
