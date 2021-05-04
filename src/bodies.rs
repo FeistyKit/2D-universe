@@ -1,4 +1,5 @@
 use std::{
+    collections::VecDeque,
     error::Error,
     fs::{read_to_string, File},
     io::Write,
@@ -79,7 +80,7 @@ pub struct WorldSpace<'a> {
     dt: Time,
     gravity: f32,
     softening: f32,
-    trails: Vec<TrailPoint<'a>>,
+    trails: VecDeque<TrailPoint<'a>>,
     stopped: bool,
     pub cam_pos: Vector2f,
     pub focused_idx: Option<usize>,
@@ -187,13 +188,13 @@ impl<'a> WorldSpace<'a> {
             }
         }
         for _ in 0..temp {
-            self.trails.remove(0);
+            self.trails.pop_front();
         }
         for planet in &mut self.bodies {
             planet.next_trail -= 1;
             if planet.next_trail < 1 {
                 planet.next_trail = 10;
-                self.trails.push(TrailPoint::new(planet.x, planet.y));
+                self.trails.push_back(TrailPoint::new(planet.x, planet.y));
             }
         }
     }
@@ -230,7 +231,7 @@ impl<'a> WorldSpace<'a> {
             gravity: 70.0,
             dt: 0.1,
             softening: 0.15,
-            trails: Vec::new(),
+            trails: VecDeque::new(),
             stopped: false,
             cam_pos: Vector2f::new(WINDOW_SIZE.0 / 2.0, WINDOW_SIZE.1 * 0.5),
             focused_idx: None,
@@ -390,7 +391,7 @@ impl From<WorldSpaceSerializable> for WorldSpace<'_> {
             gravity: other.gravity,
             softening: other.softening,
             bodies: other.bodies.into_iter().map(SpaceBody::from).collect(),
-            trails: Vec::new(),
+            trails: VecDeque::new(),
             stopped: other.stopped,
             cam_pos: Vector2f::new(other.cam_pos.0, other.cam_pos.1),
             focused_idx: other.focused_idx,
