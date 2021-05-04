@@ -35,6 +35,7 @@ fn main() {
         window.set_active(true);
         window.clear(Color::BLACK);
         space.advance(&mut window, &Default::default());
+        space.validate();
         gui.update_draw(&mut window);
         gui.update_draw_focused_display(space.prepare_for_gui(), &mut window);
         window.display();
@@ -64,13 +65,15 @@ fn handle_events(
             space.switch_stopped();
         } else if code == Key::G {
             space.focused_idx = Some(0);
-            println!("You found my dev key! {:?}", space.cam_pos);
+            println!("You found my dev key!");
         } else if code == Key::RIGHT {
             space.advance_focused_idx();
         } else if code == Key::UP {
             gui.increase_example_mass();
         } else if code == Key::DOWN {
             gui.decrease_example_mass();
+        } else if code == Key::C {
+            space.clear_bodies();
         }
     } else if let Event::MouseButtonPressed { button, x, y } = event {
         if button == Button::LEFT {

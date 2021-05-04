@@ -26,6 +26,7 @@ pub struct SpaceBody<'a> {
     next_trail: usize,
     pub shape: CircleShape<'a>,
     immovable: bool,
+    index: usize,
 }
 impl SpaceBody<'_> {
     pub fn update_shape_position(&mut self, cam_pos: &Vector2f) {
@@ -38,6 +39,7 @@ impl SpaceBody<'_> {
             self.shape.set_radius(self.radius);
         }
     }
+    #[allow(clippy::clippy::too_many_arguments)]
     pub fn new<'a>(
         position: (f32, f32),
         mass: f32,
@@ -46,6 +48,7 @@ impl SpaceBody<'_> {
         yv: f32,
         immovable: bool,
         color: Color,
+        index: usize,
     ) -> SpaceBody<'a> {
         SpaceBody {
             x: position.0,
@@ -63,6 +66,7 @@ impl SpaceBody<'_> {
                 p
             },
             immovable,
+            index,
         }
     }
     pub fn pos2f(&self) -> Vector2f {
@@ -108,6 +112,7 @@ impl From<SpaceBody<'_>> for BodySerializable {
             radius: other.radius,
             immovable: other.immovable,
             color_rgb: (other_color.red(), other_color.green(), other_color.blue()),
+            index: other.index,
         }
     }
 }
@@ -133,11 +138,19 @@ impl From<BodySerializable> for SpaceBody<'_> {
                 ));
                 c
             },
+            index: other.index,
         }
     }
 }
 #[allow(unused)]
 impl<'a> WorldSpace<'a> {
+    pub fn validate(&self) {
+        if !self.bodies.is_empty() {
+            for i in 0..self.bodies.len() {
+                assert_eq!(i, self.bodies[i].index);
+            }
+        }
+    }
     fn update_positions(&mut self) {
         for planet in self.bodies.iter_mut() {
             if !planet.immovable {
@@ -165,6 +178,10 @@ impl<'a> WorldSpace<'a> {
             self.cam_pos = Vector2f::new(WINDOW_SIZE.0 / 2.0, WINDOW_SIZE.1 * 0.5);
         }
     }
+    pub fn clear_bodies(&mut self) {
+        self.bodies = Vec::new();
+        self.focused_idx = None;
+    }
     fn update_trails(&mut self) {
         let mut temp = Vec::new();
         for i in 0..self.trails.len() {
@@ -173,7 +190,7 @@ impl<'a> WorldSpace<'a> {
             }
         }
         for a in temp {
-            self.trails.remove(a);
+            self.trails.remove(0);
         }
         for planet in &mut self.bodies {
             planet.next_trail -= 1;
@@ -299,6 +316,7 @@ impl Default for WorldSpace<'_> {
             0.0,
             false,
             Color::WHITE,
+            0,
         );
         let p2 = SpaceBody::new(
             (WINDOW_SIZE.0 / 2.0, WINDOW_SIZE.1 * 5.0 / 8.0),
@@ -308,6 +326,7 @@ impl Default for WorldSpace<'_> {
             0.0,
             false,
             Color::rgb(40, 60, 110),
+            1,
         );
         WorldSpace::with_bodies(vec![p1, p2])
     }
@@ -324,6 +343,7 @@ struct BodySerializable {
     radius: f32,
     immovable: bool,
     color_rgb: (u8, u8, u8),
+    index: usize,
 }
 #[derive(Debug, Serialize, Deserialize)]
 struct WorldSpaceSerializable {

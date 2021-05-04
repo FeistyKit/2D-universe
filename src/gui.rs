@@ -89,6 +89,7 @@ impl<'a> Gui<'a> {
                 (mouse_pos.y as f32 - self.held_position.unwrap().y) / 5.0,
                 false,
                 Color::WHITE,
+                space.bodies.len(),
             ));
             self.held_position = None;
             self.trail_line = None;
