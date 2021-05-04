@@ -111,7 +111,7 @@ impl From<SpaceBody<'_>> for BodySerializable {
             mass: other.mass,
             radius: other.radius,
             immovable: other.immovable,
-            color_rgb: (other_color.red(), other_color.green(), other_color.blue()),
+            color_rgb: (other_color.r, other_color.g, other_color.b),
             index: other.index,
         }
     }
@@ -246,7 +246,7 @@ impl<'a> WorldSpace<'a> {
     ) {
         self.draw_trails(target);
         for planet in &self.bodies {
-            planet.shape.draw(target, states);
+            planet.shape.draw(target, *states);
         }
     }
     pub fn serialize<T: AsRef<Path>>(self, p: T) -> Result<(), Box<dyn Error>> {

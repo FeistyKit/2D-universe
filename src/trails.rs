@@ -19,7 +19,7 @@ impl TrailPoint<'_> {
             self.x - self.circle.radius() - cam_pos.x + WINDOW_SIZE.0 / 2.0,
             self.y - self.circle.radius() - cam_pos.y + WINDOW_SIZE.1 / 2.0,
         ));
-        self.circle.draw(target, &Default::default());
+        self.circle.draw(target, Default::default());
     }
     pub fn new(x: f32, y: f32) -> Self {
         let radius = 5.0;

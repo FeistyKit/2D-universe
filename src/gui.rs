@@ -1,3 +1,4 @@
+use sfml::system::SfBox;
 use std::{
     convert::TryInto,
     ops::{Deref, DerefMut},
@@ -8,7 +9,6 @@ use sfml::{
         CircleShape, Color, Drawable, Font, RenderTarget, RenderWindow, Shape, Text, Transformable,
     },
     system::{Vector2, Vector2f},
-    SfBox,
 };
 
 use crate::{
@@ -53,7 +53,7 @@ impl<'a> Gui<'a> {
     }
     pub fn update_draw(&mut self, target: &mut RenderWindow) {
         if self.held_position.is_none() {
-            self.example_planet.draw(target, &Default::default());
+            self.example_planet.draw(target, Default::default());
         }
         if self.text.is_none() {
             self.text = Some(Text::new(&self.mass.to_string(), &self.font, 30));
@@ -64,10 +64,7 @@ impl<'a> Gui<'a> {
                 .unwrap()
                 .set_string(&self.mass.to_string());
         }
-        self.text
-            .as_ref()
-            .unwrap()
-            .draw(target, &Default::default());
+        self.text.as_ref().unwrap().draw(target, Default::default());
         assert_eq!(self.held_position.is_none(), self.trail_line.is_none());
         if self.held_position.is_some() {
             self.update_guideline(target.mouse_position());
@@ -123,7 +120,7 @@ impl<'a> Gui<'a> {
     }
     fn draw_guideline(&self, target: &mut dyn RenderTarget) {
         for i in self.trail_line.as_ref().unwrap().iter() {
-            i.draw(target, &Default::default());
+            i.draw(target, Default::default());
         }
     }
     pub fn update_draw_focused_display(

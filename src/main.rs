@@ -53,12 +53,12 @@ fn handle_events(
     } else if let Event::KeyPressed {
         code,
         alt: _,
-        ctrl: _,
+        ctrl,
         shift: _,
         system: _,
     } = event
     {
-        if code == Key::S {
+        if code == Key::S && ctrl {
             window.close();
             return true;
         } else if code == Key::F {
@@ -66,17 +66,17 @@ fn handle_events(
         } else if code == Key::G {
             space.focused_idx = Some(0);
             println!("You found my dev key!");
-        } else if code == Key::RIGHT {
+        } else if code == Key::Right {
             space.advance_focused_idx();
-        } else if code == Key::UP {
+        } else if code == Key::Up {
             gui.increase_example_mass();
-        } else if code == Key::DOWN {
+        } else if code == Key::Down {
             gui.decrease_example_mass();
         } else if code == Key::C {
             space.clear_bodies();
         }
     } else if let Event::MouseButtonPressed { button, x, y } = event {
-        if button == Button::LEFT {
+        if button == Button::Left {
             gui.click(space, Vector2::new(x, y));
         }
     }
