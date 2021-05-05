@@ -152,10 +152,10 @@ impl From<BodySerializable> for SpaceBody<'_> {
     }
 }
 impl<'a> WorldSpace<'a> {
-    pub fn validate(&self) {
+    pub fn validate(&mut self) {
         if !self.bodies.is_empty() {
             for i in 0..self.bodies.len() {
-                assert_eq!(i, self.bodies[i].index);
+                self.bodies[i].index = i;
             }
         }
     }
@@ -239,6 +239,8 @@ impl<'a> WorldSpace<'a> {
                     && (self.bodies[a].radius + self.bodies[b].radius).powi(2)
                         > (self.bodies[a].x - self.bodies[b].x).powi(2)
                             + (self.bodies[a].y - self.bodies[b].y).powi(2)
+                    && !to_remove.contains(&a)
+                    && !to_remove.contains(&b)
                 {
                     to_remove.insert(a);
                     to_remove.insert(b);
@@ -250,7 +252,8 @@ impl<'a> WorldSpace<'a> {
             }
         }
         for p in to_remove.iter().enumerate() {
-            self.bodies.remove(p.0 - p.1);
+            self.bodies.remove(p.1 - p.0);
+            println!("{}", self.bodies.len());
         }
         let mut q = self.bodies.len();
         for mut i in to_push {
@@ -292,11 +295,12 @@ impl<'a> WorldSpace<'a> {
             let mut ax = 0.0;
             let mut ay = 0.0;
             let planet = &self.bodies[i];
-            assert!(!planet.has_nan());
             for b in 0..len {
                 let other = &self.bodies[b];
-                assert!(!other.has_nan());
-                if other != planet {
+                let error_margin = 1.0;
+                if (other.x - planet.x).abs() > error_margin
+                    && (other.y - planet.y).abs() > error_margin
+                {
                     let dx = other.x - planet.x;
                     let dy = other.y - planet.y;
                     let squared = dx * dx + dy * dy;
@@ -347,15 +351,12 @@ impl<'a> WorldSpace<'a> {
         self.stopped = !self.stopped;
     }
     pub fn advance(&mut self, target: &mut dyn RenderTarget, states: &RenderStates) {
-        for body in &self.bodies {
-            assert!(!body.has_nan());
-        }
         if !self.stopped {
+            self.check_for_collisions();
             self.update_acceleration();
             self.update_positions();
             self.update_time();
             self.update_trails();
-            self.check_for_collisions();
         }
         self.update_cam_pos();
         self.update_planets_shape_pos();
