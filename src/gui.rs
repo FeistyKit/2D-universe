@@ -14,7 +14,7 @@ use crate::{
     bodies::{SpaceBody, WorldSpace},
     WINDOW_SIZE,
 };
-
+const NEW_PLANET_SPEED_MOD: f32 = 2.5;
 #[derive(Debug)]
 pub struct Gui<'a> {
     example_planet: CircleShape<'a>,
@@ -81,8 +81,8 @@ impl<'a> Gui<'a> {
                 ),
                 self.mass,
                 self.radius,
-                (mouse_pos.x as f32 - self.held_position.unwrap().x) / 5.0,
-                (mouse_pos.y as f32 - self.held_position.unwrap().y) / 5.0,
+                (mouse_pos.x as f32 - self.held_position.unwrap().x) / NEW_PLANET_SPEED_MOD,
+                (mouse_pos.y as f32 - self.held_position.unwrap().y) / NEW_PLANET_SPEED_MOD,
                 false,
                 Color::WHITE,
                 space.bodies.len(),

@@ -171,9 +171,21 @@ impl<'a> WorldSpace<'a> {
         }
     }
     fn update_cam_pos(&mut self) {
-        if self.focused_idx.is_some() {
-            let body = &self.bodies[self.focused_idx.unwrap()];
-            self.cam_pos = body.pos2f();
+        if let Some(idx) = self.focused_idx {
+            if let Some(real) = self.get_nearest_index(idx) {
+                let body = &self.bodies[real];
+                self.cam_pos = body.pos2f();
+            }
+        }
+    }
+    fn get_nearest_index(&self, index: usize) -> Option<usize> {
+        if self.bodies.is_empty() {
+            return None;
+        }
+        if self.bodies.get(index).is_some() {
+            Some(index)
+        } else {
+            self.get_nearest_index(index - 1)
         }
     }
     pub fn clear_bodies(&mut self) {
@@ -275,9 +287,15 @@ impl<'a> WorldSpace<'a> {
     pub fn push_body(&mut self, body: SpaceBody<'a>) {
         self.bodies.push(body);
     }
-    pub fn prepare_for_gui(&self) -> Option<(CircleShape<'a>, usize)> {
+    pub fn prepare_for_gui(&mut self) -> Option<(CircleShape<'a>, usize)> {
         if let Some(index) = self.focused_idx {
-            Some((self.bodies[index].shape.clone(), index))
+            if let Some(real) = self.get_nearest_index(index) {
+                self.focused_idx = Some(real);
+                Some((self.bodies[real].shape.clone(), real))
+            } else {
+                self.focused_idx = None;
+                None
+            }
         } else {
             None
         }
