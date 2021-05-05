@@ -84,16 +84,6 @@ impl SpaceBody<'_> {
     pub fn pos2f(&self) -> Vector2f {
         Vector2f::new(self.x, self.y)
     }
-    pub fn has_nan(&self) -> bool {
-        self.x.is_nan()
-            || self.y.is_nan()
-            || self.xv.is_nan()
-            || self.yv.is_nan()
-            || self.ax.is_nan()
-            || self.ay.is_nan()
-            || self.mass.is_nan()
-            || self.radius.is_nan()
-    }
 }
 #[derive(Debug)]
 pub struct WorldSpace<'a> {
@@ -233,6 +223,7 @@ impl<'a> WorldSpace<'a> {
         let mut to_remove = BTreeSet::new();
         let mut to_push = Vec::new();
         let t = self.bodies.len();
+        let mut new_focused = None;
         for a in 0..t {
             for b in 0..t {
                 if a != b
@@ -246,17 +237,41 @@ impl<'a> WorldSpace<'a> {
                     to_remove.insert(b);
                     let p = self.collide(a, b);
                     if !to_push.contains(&p) {
-                        to_push.push(p);
+                        if let Some(idx) = self.focused_idx {
+                            if a == idx {
+                                new_focused = Some(to_push.len());
+                            }
+                            if b == idx {
+                                new_focused = Some(to_push.len());
+                            }
+                            to_push.push(p);
+                        }
+                    } else if let Some(idx) = self.focused_idx {
+                        if a == idx {
+                            new_focused = Some(to_push.iter().position(|x| x == &p).unwrap());
+                        }
+                        if b == idx {
+                            new_focused = Some(to_push.iter().position(|x| x == &p).unwrap());
+                        }
                     }
                 }
             }
         }
         for p in to_remove.iter().enumerate() {
             self.bodies.remove(p.1 - p.0);
-            println!("{}", self.bodies.len());
+        }
+        #[allow(clippy::needless_range_loop)]
+        for a in 0..to_push.len() {
+            to_push[a].index = a;
         }
         let mut q = self.bodies.len();
         for mut i in to_push {
+            if let Some(idx) = new_focused {
+                println!("{:?}, {}", new_focused, i.index);
+                if idx == i.index {
+                    self.focused_idx = Some(self.bodies.len())
+                }
+            }
             i.index = q;
             self.bodies.push(i);
             q += 1;
