@@ -1,5 +1,5 @@
 use std::{
-    collections::VecDeque,
+    collections::{BTreeSet, VecDeque},
     error::Error,
     fs::{read_to_string, File},
     io::Write,
@@ -12,7 +12,7 @@ use sfml::{
     graphics::{CircleShape, Color, Drawable, RenderStates, RenderTarget, Shape, Transformable},
     system::Vector2f,
 };
-
+const ERROR_MARGIN: f32 = 0.01;
 type Time = f32;
 #[derive(Debug)]
 pub struct SpaceBody<'a> {
@@ -28,6 +28,17 @@ pub struct SpaceBody<'a> {
     pub shape: CircleShape<'a>,
     immovable: bool,
     index: usize,
+}
+impl Eq for SpaceBody<'_> {}
+impl PartialEq for SpaceBody<'_> {
+    fn eq(&self, other: &Self) -> bool {
+        (self.x - other.x).abs() > ERROR_MARGIN
+            && (self.y - other.y).abs() > ERROR_MARGIN
+            && (self.xv - other.xv).abs() > ERROR_MARGIN
+            && (self.mass - other.mass).abs() > ERROR_MARGIN
+            && (self.radius - other.radius).abs() > ERROR_MARGIN
+            && (self.immovable == other.immovable)
+    }
 }
 impl SpaceBody<'_> {
     pub fn update_shape_position(&mut self, cam_pos: &Vector2f) {
@@ -73,6 +84,16 @@ impl SpaceBody<'_> {
     pub fn pos2f(&self) -> Vector2f {
         Vector2f::new(self.x, self.y)
     }
+    pub fn has_nan(&self) -> bool {
+        self.x.is_nan()
+            || self.y.is_nan()
+            || self.xv.is_nan()
+            || self.yv.is_nan()
+            || self.ax.is_nan()
+            || self.ay.is_nan()
+            || self.mass.is_nan()
+            || self.radius.is_nan()
+    }
 }
 #[derive(Debug)]
 pub struct WorldSpace<'a> {
@@ -84,19 +105,6 @@ pub struct WorldSpace<'a> {
     stopped: bool,
     pub cam_pos: Vector2f,
     pub focused_idx: Option<usize>,
-}
-
-impl PartialEq for SpaceBody<'_> {
-    fn eq(&self, other: &Self) -> bool {
-        self.x == other.x
-            && self.y == other.y
-            && self.xv == other.xv
-            && self.yv == other.yv
-            && self.ax == other.ax
-            && self.ay == other.ay
-            && self.mass == other.mass
-            && self.radius == other.radius
-    }
 }
 
 impl From<SpaceBody<'_>> for BodySerializable {
@@ -188,6 +196,69 @@ impl<'a> WorldSpace<'a> {
             self.get_nearest_index(index - 1)
         }
     }
+    fn collide(&self, idx_a: usize, idx_b: usize) -> SpaceBody<'a> {
+        assert!(self.bodies.get(idx_a).is_some());
+        assert!(self.bodies.get(idx_b).is_some());
+        assert_ne!(idx_a, idx_b);
+        let body_a = self.bodies.get(idx_a).unwrap();
+        let body_b = &self.bodies[idx_b];
+        let total_mass = body_a.mass + body_b.mass;
+        let (r, g, b) = (
+            body_a.shape.fill_color().r / 2 + body_b.shape.fill_color().r / 2,
+            body_a.shape.fill_color().g / 2 + body_b.shape.fill_color().g / 2,
+            body_a.shape.fill_color().b / 2 + body_b.shape.fill_color().b / 2,
+        );
+        let radius = (body_a.radius * body_a.radius + body_b.radius * body_b.radius).sqrt();
+        let xv = body_a.xv / 2.0 + body_b.xv / 2.0;
+        let yv = body_a.yv / 2.0 + body_b.yv / 2.0;
+        let position = (
+            body_a.x / 2.0 + body_b.x / 2.0,
+            body_a.y / 2.0 + body_b.y / 2.0,
+        );
+        SpaceBody::new(
+            position,
+            total_mass,
+            radius,
+            xv,
+            yv,
+            false,
+            Color::rgb(r, g, b),
+            self.bodies.len(),
+        )
+    }
+    pub fn check_for_collisions(&mut self) {
+        if self.bodies.is_empty() || self.bodies.len() == 1 {
+            return;
+        }
+        let mut to_remove = BTreeSet::new();
+        let mut to_push = Vec::new();
+        let t = self.bodies.len();
+        for a in 0..t {
+            for b in 0..t {
+                if a != b
+                    && (self.bodies[a].radius + self.bodies[b].radius).powi(2)
+                        > (self.bodies[a].x - self.bodies[b].x).powi(2)
+                            + (self.bodies[a].y - self.bodies[b].y).powi(2)
+                {
+                    to_remove.insert(a);
+                    to_remove.insert(b);
+                    let p = self.collide(a, b);
+                    if !to_push.contains(&p) {
+                        to_push.push(p);
+                    }
+                }
+            }
+        }
+        for p in to_remove.iter().enumerate() {
+            self.bodies.remove(p.0 - p.1);
+        }
+        let mut q = self.bodies.len();
+        for mut i in to_push {
+            i.index = q;
+            self.bodies.push(i);
+            q += 1;
+        }
+    }
     pub fn clear_bodies(&mut self) {
         self.bodies = Vec::new();
         self.focused_idx = None;
@@ -221,8 +292,10 @@ impl<'a> WorldSpace<'a> {
             let mut ax = 0.0;
             let mut ay = 0.0;
             let planet = &self.bodies[i];
+            assert!(!planet.has_nan());
             for b in 0..len {
                 let other = &self.bodies[b];
+                assert!(!other.has_nan());
                 if other != planet {
                     let dx = other.x - planet.x;
                     let dy = other.y - planet.y;
@@ -274,11 +347,15 @@ impl<'a> WorldSpace<'a> {
         self.stopped = !self.stopped;
     }
     pub fn advance(&mut self, target: &mut dyn RenderTarget, states: &RenderStates) {
+        for body in &self.bodies {
+            assert!(!body.has_nan());
+        }
         if !self.stopped {
             self.update_acceleration();
             self.update_positions();
             self.update_time();
             self.update_trails();
+            self.check_for_collisions();
         }
         self.update_cam_pos();
         self.update_planets_shape_pos();
@@ -326,13 +403,16 @@ impl<'a> WorldSpace<'a> {
     }
     pub fn remove_selected(&mut self) {
         if let Some(index) = self.focused_idx {
-            self.bodies.remove(index);
-            for planet in &mut self.bodies[index..] {
-                planet.index -= 1;
-            }
+            self.remove_body(index);
             if self.bodies.is_empty() {
                 self.focused_idx = None;
             }
+        }
+    }
+    pub fn remove_body(&mut self, idx: usize) {
+        self.bodies.remove(idx);
+        for planet in &mut self.bodies[idx..] {
+            planet.index -= 1;
         }
     }
 }

@@ -64,8 +64,8 @@ fn handle_events(
         } else if code == Key::F {
             space.switch_stopped();
         } else if code == Key::G {
-            space.focused_idx = Some(0);
             println!("You found my dev key!");
+            println!("{:?}", space.bodies);
         } else if code == Key::Right {
             space.advance_focused_idx();
         } else if code == Key::Up {
