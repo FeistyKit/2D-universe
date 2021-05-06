@@ -199,8 +199,8 @@ impl<'a> WorldSpace<'a> {
             body_a.shape.fill_color().b / 2 + body_b.shape.fill_color().b / 2,
         );
         let radius = (body_a.radius * body_a.radius + body_b.radius * body_b.radius).sqrt();
-        let xv = body_a.xv / 2.0 + body_b.xv / 2.0;
-        let yv = body_a.yv / 2.0 + body_b.yv / 2.0;
+        let xv = (body_a.xv * body_a.mass + body_b.xv * body_b.mass) / total_mass;
+        let yv = (body_a.yv * body_a.mass + body_b.yv * body_b.mass) / total_mass;
         let position = (
             body_a.x / 2.0 + body_b.x / 2.0,
             body_a.y / 2.0 + body_b.y / 2.0,
@@ -394,6 +394,9 @@ impl<'a> WorldSpace<'a> {
         }
     }
     pub fn advance_focused_idx(&mut self) {
+        if self.bodies.is_empty() {
+            return;
+        }
         let max = self.bodies.len() - 1;
         if let Some(index) = self.focused_idx {
             if index < max {
@@ -406,6 +409,9 @@ impl<'a> WorldSpace<'a> {
         }
     }
     pub fn reduce_focused_index(&mut self) {
+        if self.bodies.is_empty() {
+            return;
+        }
         let max = self.bodies.len() - 1;
         if let Some(index) = self.focused_idx {
             if index > 0 {
