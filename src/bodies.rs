@@ -194,9 +194,15 @@ impl<'a> WorldSpace<'a> {
         let body_b = &self.bodies[idx_b];
         let total_mass = body_a.mass + body_b.mass;
         let (r, g, b) = (
-            body_a.shape.fill_color().r / 2 + body_b.shape.fill_color().r / 2,
-            body_a.shape.fill_color().g / 2 + body_b.shape.fill_color().g / 2,
-            body_a.shape.fill_color().b / 2 + body_b.shape.fill_color().b / 2,
+            ((body_a.shape.fill_color().r as f32 * body_a.mass
+                + body_b.shape.fill_color().r as f32 * body_b.mass)
+                / total_mass) as u8,
+            ((body_a.shape.fill_color().g as f32 * body_a.mass
+                + body_b.shape.fill_color().g as f32 * body_b.mass)
+                / total_mass) as u8,
+            ((body_a.shape.fill_color().b as f32 * body_a.mass
+                + body_b.shape.fill_color().b as f32 * body_b.mass)
+                / total_mass) as u8,
         );
         let radius = (body_a.radius * body_a.radius + body_b.radius * body_b.radius).sqrt();
         let xv = (body_a.xv * body_a.mass + body_b.xv * body_b.mass) / total_mass;
