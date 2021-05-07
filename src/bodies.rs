@@ -205,7 +205,7 @@ impl<'a> WorldSpace<'a> {
             body_a.x / 2.0 + body_b.x / 2.0,
             body_a.y / 2.0 + body_b.y / 2.0,
         );
-        SpaceBody::new(
+        let p = SpaceBody::new(
             position,
             total_mass,
             radius,
@@ -214,7 +214,9 @@ impl<'a> WorldSpace<'a> {
             false,
             Color::rgb(r, g, b),
             self.bodies.len(),
-        )
+        );
+        println!("{:?}", p);
+        p
     }
     pub fn check_for_collisions(&mut self) {
         if self.bodies.is_empty() || self.bodies.len() == 1 {
@@ -244,8 +246,8 @@ impl<'a> WorldSpace<'a> {
                             if b == idx {
                                 new_focused = Some(to_push.len());
                             }
-                            to_push.push(p);
                         }
+                        to_push.push(p);
                     } else if let Some(idx) = self.focused_idx {
                         if a == idx {
                             new_focused = Some(to_push.iter().position(|x| x == &p).unwrap());
