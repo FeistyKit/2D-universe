@@ -268,19 +268,15 @@ impl<'a> WorldSpace<'a> {
         for p in to_remove.iter().enumerate() {
             self.bodies.remove(p.1 - p.0);
         }
-        #[allow(clippy::needless_range_loop)]
-        for a in 0..to_push.len() {
-            to_push[a].index = a;
-        }
         let mut q = self.bodies.len();
         for mut i in to_push {
+            i.index = q;
             if let Some(idx) = new_focused {
                 println!("{:?}, {}", new_focused, i.index);
                 if idx == i.index {
-                    self.focused_idx = Some(self.bodies.len())
+                    self.focused_idx = Some(q);
                 }
             }
-            i.index = q;
             self.bodies.push(i);
             q += 1;
         }
