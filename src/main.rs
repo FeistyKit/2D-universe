@@ -1,6 +1,7 @@
 mod bodies;
 mod gui;
 mod trails;
+mod widgets;
 
 use bodies::WorldSpace;
 use sfml::{

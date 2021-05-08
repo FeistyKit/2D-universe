@@ -1,4 +1,5 @@
 use std::{
+    collections::BTreeSet,
     convert::TryInto,
     ops::{Deref, DerefMut},
 };
@@ -12,6 +13,7 @@ use sfml::{
 
 use crate::{
     bodies::{SpaceBody, WorldSpace},
+    widgets::Widget,
     WINDOW_SIZE,
 };
 const NEW_PLANET_SPEED_MOD: f32 = 2.5;
@@ -27,6 +29,7 @@ pub struct Gui<'a> {
     trail_line: Option<[GuideLinePoint<'a>; 10]>,
     focused_planet: Option<CircleShape<'a>>,
     focused_number_display: Option<Text<'a>>,
+    widgets: BTreeSet<Box<dyn Widget>>,
 }
 
 impl<'a> Gui<'a> {
@@ -48,6 +51,7 @@ impl<'a> Gui<'a> {
             trail_line: None,
             focused_planet: None,
             focused_number_display: None,
+            widgets: BTreeSet::new(),
         }
     }
     pub fn update_draw(&mut self, target: &mut RenderWindow) {
@@ -68,6 +72,12 @@ impl<'a> Gui<'a> {
         if self.held_position.is_some() {
             self.update_guideline(target.mouse_position());
             self.draw_guideline(target);
+        }
+        self.draw_widgets(target);
+    }
+    fn draw_widgets(&self, target: &mut dyn RenderTarget) {
+        for widget in &self.widgets {
+            widget.draw(target);
         }
     }
     pub fn click(&mut self, space: &mut WorldSpace, mouse_pos: Vector2<i32>) {
