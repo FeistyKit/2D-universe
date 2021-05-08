@@ -130,9 +130,12 @@ impl<'a> Gui<'a> {
         if let Some(pair) = opt {
             let mut shape = pair.0;
             let index = pair.1;
-            shape.set_position((WINDOW_SIZE.0 - shape.radius() * 3.0, 0.0));
+            shape.set_position((WINDOW_SIZE.0 - shape.radius() * 2.0 - 30.0, 0.0));
             let mut text = Text::new(&format!("#{}", index + 1), self.font, 50);
-            text.set_position((WINDOW_SIZE.0 - 3.0 * shape.radius(), shape.radius() + 30.0));
+            text.set_position((
+                WINDOW_SIZE.0 - 3.0 * shape.radius(),
+                shape.radius() * 2.0 + 30.0,
+            ));
             self.focused_number_display = Some(text);
             self.focused_planet = Some(shape);
             target.draw(self.focused_number_display.as_ref().unwrap());

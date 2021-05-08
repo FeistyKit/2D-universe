@@ -211,7 +211,7 @@ impl<'a> WorldSpace<'a> {
             body_a.x / 2.0 + body_b.x / 2.0,
             body_a.y / 2.0 + body_b.y / 2.0,
         );
-        let p = SpaceBody::new(
+        SpaceBody::new(
             position,
             total_mass,
             radius,
@@ -220,11 +220,9 @@ impl<'a> WorldSpace<'a> {
             false,
             Color::rgb(r, g, b),
             self.bodies.len(),
-        );
-        println!("{:?}", p);
-        p
+        )
     }
-    pub fn check_for_collisions(&mut self) {
+    pub fn do_collisions(&mut self) {
         if self.bodies.is_empty() || self.bodies.len() == 1 {
             return;
         }
@@ -247,19 +245,25 @@ impl<'a> WorldSpace<'a> {
                     if !to_push.contains(&p) {
                         if let Some(idx) = self.focused_idx {
                             if a == idx {
-                                new_focused = Some(to_push.len());
+                                new_focused = Some(to_push.len() + self.bodies.len() - 2);
                             }
                             if b == idx {
-                                new_focused = Some(to_push.len());
+                                new_focused = Some(to_push.len() + self.bodies.len() - 2);
                             }
                         }
                         to_push.push(p);
                     } else if let Some(idx) = self.focused_idx {
                         if a == idx {
-                            new_focused = Some(to_push.iter().position(|x| x == &p).unwrap());
+                            new_focused = Some(
+                                to_push.iter().position(|x| x == &p).unwrap() + self.bodies.len()
+                                    - 1,
+                            );
                         }
                         if b == idx {
-                            new_focused = Some(to_push.iter().position(|x| x == &p).unwrap());
+                            new_focused = Some(
+                                to_push.iter().position(|x| x == &p).unwrap() + self.bodies.len()
+                                    - 1,
+                            );
                         }
                     }
                 }
@@ -272,7 +276,6 @@ impl<'a> WorldSpace<'a> {
         for mut i in to_push {
             i.index = q;
             if let Some(idx) = new_focused {
-                println!("{:?}, {}", new_focused, i.index);
                 if idx == i.index {
                     self.focused_idx = Some(q);
                 }
@@ -371,7 +374,7 @@ impl<'a> WorldSpace<'a> {
     }
     pub fn advance(&mut self, target: &mut dyn RenderTarget, states: &RenderStates) {
         if !self.stopped {
-            self.check_for_collisions();
+            self.do_collisions();
             self.update_acceleration();
             self.update_positions();
             self.update_time();
