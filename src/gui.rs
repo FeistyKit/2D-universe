@@ -1,4 +1,5 @@
 use std::{
+    cell::RefCell,
     collections::BTreeSet,
     convert::TryInto,
     ops::{Deref, DerefMut},
@@ -13,7 +14,7 @@ use sfml::{
 
 use crate::{
     bodies::{SpaceBody, WorldSpace},
-    widgets::Widget,
+    widgets::{TestButton, Widget},
     WINDOW_SIZE,
 };
 const NEW_PLANET_SPEED_MOD: f32 = 2.5;
@@ -29,7 +30,7 @@ pub struct Gui<'a> {
     trail_line: Option<[GuideLinePoint<'a>; 10]>,
     focused_planet: Option<CircleShape<'a>>,
     focused_number_display: Option<Text<'a>>,
-    widgets: BTreeSet<Box<dyn Widget>>,
+    widgets: BTreeSet<RefCell<Box<dyn Widget>>>,
 }
 
 impl<'a> Gui<'a> {
@@ -39,6 +40,11 @@ impl<'a> Gui<'a> {
         circle.set_position((
             (default_radius) as f32,
             (size.y - 2 * default_radius) as f32,
+        ));
+        #[allow(clippy::mutable_key_type)]
+        let mut set = BTreeSet::new();
+        set.insert(RefCell::new(
+            Box::new(TestButton::default(set.len())) as Box<dyn Widget>
         ));
         Gui {
             example_planet: circle,
@@ -51,7 +57,7 @@ impl<'a> Gui<'a> {
             trail_line: None,
             focused_planet: None,
             focused_number_display: None,
-            widgets: BTreeSet::new(),
+            widgets: set,
         }
     }
     pub fn update_draw(&mut self, target: &mut RenderWindow) {
@@ -77,10 +83,17 @@ impl<'a> Gui<'a> {
     }
     fn draw_widgets(&self, target: &mut dyn RenderTarget) {
         for widget in &self.widgets {
-            widget.draw(target);
+            widget.borrow().draw(target);
         }
     }
     pub fn click(&mut self, space: &mut WorldSpace, mouse_pos: Vector2<i32>) {
+        for widget in self.widgets.iter() {
+            let bounds = widget.borrow().get_bounds();
+            if inside(bounds, mouse_pos) {
+                widget.borrow_mut().click(self, space);
+                return;
+            }
+        }
         let adj_pos_x = mouse_pos.x as f32;
         let adj_pos_y = mouse_pos.y as f32;
         if self.held_position.is_some() {
@@ -183,4 +196,8 @@ impl<'a> DerefMut for GuideLinePoint<'a> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.circle
     }
+}
+
+fn inside(a: (Vector2f, Vector2f), b: Vector2<i32>) -> bool {
+    a.0.x < b.x as f32 && a.0.y < b.y as f32 && a.1.x > b.x as f32 && a.1.y > b.y as f32
 }

@@ -1,13 +1,13 @@
 use sfml::{
-    graphics::{CircleShape, Color, Drawable, RectangleShape, RenderTarget, Shape, Transformable},
+    graphics::{Color, Drawable, RenderTarget},
     system::Vector2f,
 };
-use std::{f32::consts::PI, fmt::Debug, usize};
+use std::{fmt::Debug, usize};
 
-use crate::{bodies::WorldSpace, gui::Gui};
+use crate::{bodies::WorldSpace, gui::Gui, shapes::RoundedRect};
 #[derive(Debug)]
 pub enum WidgetKind {
-    RoundedRect,
+    TestButton,
 }
 
 pub trait Widget {
@@ -15,7 +15,7 @@ pub trait Widget {
     fn get_layer(&self) -> usize;
     fn draw(&self, target: &mut dyn RenderTarget);
     fn widget_type(&self) -> WidgetKind;
-    fn click(&mut self, gui: &mut Gui, space: &mut WorldSpace);
+    fn click(&mut self, gui: &Gui, space: &mut WorldSpace);
     fn release_click(&mut self, gui: &mut Gui, space: &mut WorldSpace);
 }
 impl PartialOrd for dyn Widget {
@@ -49,83 +49,6 @@ pub struct TestButton<'a> {
     layer: usize,
     rect: RoundedRect<'a>,
 }
-pub struct RoundedRect<'a> {
-    radius: f32,
-    circles: [CircleShape<'a>; 4], //circles are in order like quadrants of coordinate grid
-    rectangles: [RectangleShape<'a>; 2],
-    dimensions: Vector2f,
-    position: Vector2f,
-    color: Color,
-}
-impl RoundedRect<'_> {
-    #[allow(unused)]
-    pub fn new<'a, T>(radius: f32, bdimensions: T, bposition: T, color: Color) -> RoundedRect<'a>
-    where
-        T: Into<Vector2f>,
-    {
-        let dimensions: Vector2f = bdimensions.into();
-        let position: Vector2f = bposition.into();
-        assert!(
-            radius * 2.0 <= dimensions.x,
-            "The radius was too large for a RoundedRect of x size {}",
-            dimensions.x
-        );
-        assert!(
-            radius * 2.0 <= dimensions.y,
-            "The radius was too large for a RoundedRect of x size {}",
-            dimensions.y
-        );
-        let mut def = CircleShape::new(radius, (radius * PI).ceil() as u32);
-        def.set_fill_color(color);
-        let mut top_left = def.clone();
-        top_left.set_position(position);
-        let mut top_right = def.clone();
-        top_right.set_position((position.x + dimensions.x - radius * 2.0, position.y));
-        let mut bottom_left = def.clone();
-        bottom_left.set_position((position.x, position.y + dimensions.y - 2.0 * radius));
-        let mut bottom_right = def.clone();
-        bottom_right.set_position((
-            position.x + dimensions.x - radius * 2.0,
-            position.y + dimensions.y - radius * 2.0,
-        ));
-        drop(def);
-        let circles = [top_right, top_left, bottom_left, bottom_right];
-        let mut up_down =
-            RectangleShape::with_size(Vector2f::new(dimensions.x - radius * 2.0, dimensions.y));
-        up_down.set_fill_color(color);
-        up_down.set_position((position.x + radius, position.y));
-        let mut left_right =
-            RectangleShape::with_size(Vector2f::new(dimensions.x, dimensions.y - 2.0 * radius));
-        left_right.set_fill_color(color);
-        left_right.set_position((position.x, position.y + radius));
-        RoundedRect {
-            radius,
-            circles,
-            rectangles: [up_down, left_right],
-            dimensions,
-            position,
-            color,
-        }
-    }
-    #[allow(unused)]
-    pub fn set_position<P: Into<Vector2f>>(&mut self, pos: P) {
-        todo!()
-    }
-    pub fn get_radius(&self) -> f32 {
-        self.radius
-    }
-    pub fn set_colour(&mut self, color: Color) {
-        for circle in &mut self.circles {
-            circle.set_fill_color(color);
-        }
-        for rect in &mut self.rectangles {
-            rect.set_fill_color(color);
-        }
-    }
-    pub fn get_colour(&self) -> Color {
-        self.color
-    }
-}
 impl Widget for TestButton<'_> {
     fn get_bounds(&self) -> (Vector2f, Vector2f) {
         (
@@ -150,11 +73,11 @@ impl Widget for TestButton<'_> {
     }
 
     fn widget_type(&self) -> WidgetKind {
-        WidgetKind::RoundedRect
+        WidgetKind::TestButton
     }
     #[allow(unused)]
-    fn click(&mut self, gui: &mut Gui, space: &mut WorldSpace) {
-        todo!()
+    fn click(&mut self, gui: &Gui, space: &mut WorldSpace) {
+        println!("Clicked!");
     }
     #[allow(unused)]
     fn release_click(&mut self, gui: &mut Gui, space: &mut WorldSpace) {
@@ -176,5 +99,8 @@ impl TestButton<'_> {
             layer,
             rect: RoundedRect::new(radius, dimensions, position, color),
         }
+    }
+    pub fn default(layer: usize) -> Self {
+        TestButton::new(layer, 10.0, (400.0, 400.0), (200.0, 200.0), Color::BLUE)
     }
 }

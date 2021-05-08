@@ -1,5 +1,6 @@
 mod bodies;
 mod gui;
+mod shapes;
 mod trails;
 mod widgets;
 
