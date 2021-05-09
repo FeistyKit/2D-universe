@@ -117,6 +117,13 @@ impl<'a> Gui<'a> {
             self.update_guideline(mouse_pos);
         }
     }
+    pub fn release_click(&mut self, space: &mut WorldSpace) {
+        for widget in self.widgets.iter() {
+            if widget.borrow().has_been_clicked() {
+                widget.borrow_mut().release_click(&self, space);
+            }
+        }
+    }
     fn update_guideline(&mut self, mouse_pos: Vector2<i32>) {
         let adj_pos_x = mouse_pos.x as f32;
         let adj_pos_y = mouse_pos.y as f32;

@@ -16,7 +16,8 @@ pub trait Widget {
     fn draw(&self, target: &mut dyn RenderTarget);
     fn widget_type(&self) -> WidgetKind;
     fn click(&mut self, gui: &Gui, space: &mut WorldSpace);
-    fn release_click(&mut self, gui: &mut Gui, space: &mut WorldSpace);
+    fn release_click(&mut self, gui: &Gui, space: &mut WorldSpace);
+    fn has_been_clicked(&self) -> bool;
 }
 impl PartialOrd for dyn Widget {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
@@ -48,6 +49,7 @@ impl Eq for dyn Widget {}
 pub struct TestButton<'a> {
     layer: usize,
     rect: RoundedRect<'a>,
+    has_been_clicked: bool,
 }
 impl Widget for TestButton<'_> {
     fn get_bounds(&self) -> (Vector2f, Vector2f) {
@@ -77,11 +79,17 @@ impl Widget for TestButton<'_> {
     }
     #[allow(unused)]
     fn click(&mut self, gui: &Gui, space: &mut WorldSpace) {
-        println!("Clicked!");
+        self.rect.set_fill_color(Color::TRANSPARENT);
+        self.has_been_clicked = true;
     }
     #[allow(unused)]
-    fn release_click(&mut self, gui: &mut Gui, space: &mut WorldSpace) {
-        todo!()
+    fn release_click(&mut self, gui: &Gui, space: &mut WorldSpace) {
+        self.rect.set_fill_color(Color::BLUE);
+        self.has_been_clicked = false;
+    }
+
+    fn has_been_clicked(&self) -> bool {
+        self.has_been_clicked
     }
 }
 impl TestButton<'_> {
@@ -98,6 +106,7 @@ impl TestButton<'_> {
         TestButton {
             layer,
             rect: RoundedRect::new(radius, dimensions, position, color),
+            has_been_clicked: false,
         }
     }
     pub fn default(layer: usize) -> Self {

@@ -85,6 +85,10 @@ fn handle_events(
         if button == Button::Left {
             gui.click(space, Vector2::new(x, y));
         }
+    } else if let Event::MouseButtonReleased { button, x: _, y: _ } = event {
+        if button == Button::Left {
+            gui.release_click(space);
+        }
     }
     false
 }
