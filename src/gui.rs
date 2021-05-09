@@ -14,7 +14,8 @@ use sfml::{
 
 use crate::{
     bodies::{SpaceBody, WorldSpace},
-    widgets::{TestButton, Widget},
+    testbutton::TestButton,
+    widgets::Widget,
     WINDOW_SIZE,
 };
 const NEW_PLANET_SPEED_MOD: f32 = 2.5;

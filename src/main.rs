@@ -1,6 +1,8 @@
 mod bodies;
 mod gui;
 mod shapes;
+#[path = "./buttons/testbutton.rs"]
+mod testbutton;
 mod trails;
 mod widgets;
 
