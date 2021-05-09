@@ -1,13 +1,13 @@
 use sfml::{graphics::RenderTarget, system::Vector2f};
-use std::{any::Any, fmt::Debug, usize};
+use std::{fmt::Debug, usize};
 
 use crate::{bodies::WorldSpace, gui::Gui};
 #[derive(Debug)]
 pub enum WidgetKind {
-    TestButton,
+    TestButton(String),
 }
 
-pub trait Widget: Any {
+pub trait Widget {
     fn get_bounds(&self) -> (Vector2f, Vector2f);
     fn get_layer(&self) -> usize;
     fn draw(&self, target: &mut dyn RenderTarget);
@@ -29,15 +29,8 @@ impl PartialEq for dyn Widget {
 impl Debug for dyn Widget {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self.widget_type() {
-            WidgetKind::TestButton => {}
+            WidgetKind::TestButton(s) => write!(f, "{}", s),
         }
-        write!(
-            f,
-            "{:?}{{layer: {}, bounds: {:?}}}",
-            self.widget_type(),
-            self.get_layer(),
-            self.get_bounds()
-        )
     }
 }
 impl Ord for dyn Widget {

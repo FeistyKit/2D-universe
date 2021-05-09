@@ -10,7 +10,7 @@ use crate::{
     shapes::RoundedRect,
     widgets::{Widget, WidgetKind},
 };
-
+#[derive(Debug)]
 pub struct TestButton<'a> {
     layer: usize,
     rect: RoundedRect<'a>,
@@ -40,7 +40,7 @@ impl Widget for TestButton<'_> {
     }
 
     fn widget_type(&self) -> WidgetKind {
-        WidgetKind::TestButton
+        WidgetKind::TestButton(format!("{:?}", self))
     }
     #[allow(unused)]
     fn click(&mut self, gui: &Gui, space: &mut WorldSpace) {
