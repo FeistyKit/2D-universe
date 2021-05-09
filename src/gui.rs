@@ -14,7 +14,6 @@ use sfml::{
 
 use crate::{
     bodies::{SpaceBody, WorldSpace},
-    testbutton::TestButton,
     widgets::Widget,
     WINDOW_SIZE,
 };
@@ -43,10 +42,12 @@ impl<'a> Gui<'a> {
             (size.y - 2 * default_radius) as f32,
         ));
         #[allow(clippy::mutable_key_type)]
-        let mut set = BTreeSet::new();
+        let set = BTreeSet::new();
+        /*
         set.insert(RefCell::new(
             Box::new(TestButton::default(set.len())) as Box<dyn Widget>
         ));
+        */
         Gui {
             example_planet: circle,
             held_position: None,

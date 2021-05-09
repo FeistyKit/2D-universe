@@ -29,7 +29,9 @@ impl PartialEq for dyn Widget {
 impl Debug for dyn Widget {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self.widget_type() {
-            WidgetKind::TestButton(s) => write!(f, "{}", s),
+            WidgetKind::TestButton(s) => {
+                write!(f, "{}", s)
+            }
         }
     }
 }
