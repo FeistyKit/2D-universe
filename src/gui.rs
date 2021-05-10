@@ -14,6 +14,7 @@ use sfml::{
 
 use crate::{
     bodies::{SpaceBody, WorldSpace},
+    testbutton::TestButton,
     widgets::Widget,
     WINDOW_SIZE,
 };
@@ -30,7 +31,8 @@ pub struct Gui<'a> {
     trail_line: Option<[GuideLinePoint<'a>; 10]>,
     focused_planet: Option<CircleShape<'a>>,
     focused_number_display: Option<Text<'a>>,
-    widgets: BTreeSet<RefCell<Box<dyn Widget>>>,
+    pub widgets: BTreeSet<RefCell<Box<dyn Widget>>>,
+    click_held: bool,
 }
 
 impl<'a> Gui<'a> {
@@ -42,12 +44,11 @@ impl<'a> Gui<'a> {
             (size.y - 2 * default_radius) as f32,
         ));
         #[allow(clippy::mutable_key_type)]
-        let set = BTreeSet::new();
-        /*
+        let mut set = BTreeSet::new();
         set.insert(RefCell::new(
             Box::new(TestButton::default(set.len())) as Box<dyn Widget>
         ));
-        */
+
         Gui {
             example_planet: circle,
             held_position: None,
@@ -60,6 +61,17 @@ impl<'a> Gui<'a> {
             focused_planet: None,
             focused_number_display: None,
             widgets: set,
+            click_held: false,
+        }
+    }
+    pub fn mouse_moved(&mut self, x: i32, y: i32) {
+        if self.click_held {
+            for widget in self.widgets.iter() {
+                if widget.borrow().is_click_held() {
+                    widget.borrow_mut().mouse_moved(x, y);
+                    return;
+                }
+            }
         }
     }
     pub fn update_draw(&mut self, target: &mut RenderWindow) {
@@ -89,6 +101,7 @@ impl<'a> Gui<'a> {
         }
     }
     pub fn click(&mut self, space: &mut WorldSpace, mouse_pos: Vector2<i32>) {
+        self.click_held = true;
         for widget in self.widgets.iter() {
             let bounds = widget.borrow().get_bounds();
             if inside(bounds, mouse_pos) {
@@ -120,8 +133,9 @@ impl<'a> Gui<'a> {
         }
     }
     pub fn release_click(&mut self, space: &mut WorldSpace) {
+        self.click_held = false;
         for widget in self.widgets.iter() {
-            if widget.borrow().has_been_clicked() {
+            if widget.borrow().is_click_held() {
                 widget.borrow_mut().release_click(&self, space);
             }
         }

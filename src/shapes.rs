@@ -90,6 +90,10 @@ impl RoundedRect<'_> {
             rect.set_fill_color(self.color);
         }
     }
+    #[allow(unused)]
+    fn change_radius(&mut self, radius: f32) {
+        *self = RoundedRect::new(radius, self.dimensions, self.position, self.color);
+    }
 }
 impl Transformable for RoundedRect<'_> {
     fn set_position<P: Into<Vector2f>>(&mut self, bposition: P) {
@@ -107,6 +111,7 @@ impl Transformable for RoundedRect<'_> {
 
     fn set_origin<O: Into<Vector2f>>(&mut self, origin: O) {
         self.position = origin.into() - self.dimensions / 2.0;
+        self.update_positions();
     }
 
     fn position(&self) -> Vector2f {

@@ -91,6 +91,8 @@ fn handle_events(
         if button == Button::Left {
             gui.release_click(space);
         }
+    } else if let Event::MouseMoved { x, y } = event {
+        gui.mouse_moved(x, y);
     }
     false
 }

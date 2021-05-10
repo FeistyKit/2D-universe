@@ -14,7 +14,9 @@ pub trait Widget {
     fn widget_type(&self) -> WidgetKind;
     fn click(&mut self, gui: &Gui, space: &mut WorldSpace);
     fn release_click(&mut self, gui: &Gui, space: &mut WorldSpace);
-    fn has_been_clicked(&self) -> bool;
+    fn is_click_held(&self) -> bool;
+    fn debug_string(&self) -> String;
+    fn mouse_moved(&mut self, x: i32, y: i32);
 }
 impl PartialOrd for dyn Widget {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
@@ -28,11 +30,7 @@ impl PartialEq for dyn Widget {
 }
 impl Debug for dyn Widget {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self.widget_type() {
-            WidgetKind::TestButton(s) => {
-                write!(f, "{}", s)
-            }
-        }
+        write!(f, "{}", self.debug_string())
     }
 }
 impl Ord for dyn Widget {

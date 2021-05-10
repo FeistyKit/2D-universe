@@ -1,5 +1,5 @@
 use sfml::{
-    graphics::{Color, Drawable, RenderTarget},
+    graphics::{Color, Drawable, RenderTarget, Transformable},
     system::Vector2f,
 };
 use std::usize;
@@ -14,7 +14,7 @@ use crate::{
 pub struct TestButton<'a> {
     layer: usize,
     rect: RoundedRect<'a>,
-    has_been_clicked: bool,
+    is_click_held: bool,
 }
 impl Widget for TestButton<'_> {
     fn get_bounds(&self) -> (Vector2f, Vector2f) {
@@ -44,19 +44,26 @@ impl Widget for TestButton<'_> {
     }
     #[allow(unused)]
     fn click(&mut self, gui: &Gui, space: &mut WorldSpace) {
-        self.rect.set_fill_color(Color::TRANSPARENT);
-        self.has_been_clicked = true;
+        self.rect.set_fill_color(Color::RED);
+        self.is_click_held = true;
     }
     #[allow(unused)]
     fn release_click(&mut self, gui: &Gui, space: &mut WorldSpace) {
         self.rect.set_fill_color(Color::BLUE);
-        self.has_been_clicked = false;
+        self.is_click_held = false;
     }
 
-    fn has_been_clicked(&self) -> bool {
-        self.has_been_clicked
+    fn is_click_held(&self) -> bool {
+        self.is_click_held
+    }
+    fn debug_string(&self) -> std::string::String {
+        format!("{:?}", self)
+    }
+    fn mouse_moved(&mut self, x: i32, y: i32) {
+        self.rect.set_origin((x as f32, y as f32));
     }
 }
+#[allow(unused)]
 impl TestButton<'_> {
     pub fn new<'a, T>(
         layer: usize,
@@ -71,7 +78,7 @@ impl TestButton<'_> {
         TestButton {
             layer,
             rect: RoundedRect::new(radius, dimensions, position, color),
-            has_been_clicked: false,
+            is_click_held: false,
         }
     }
     pub fn default(layer: usize) -> Self {
