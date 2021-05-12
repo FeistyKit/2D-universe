@@ -52,6 +52,20 @@ impl<'a> Gui<'a> {
             (255.0, 20.0),
             5.0,
         )) as Box<dyn Widget>));
+        set.insert(RefCell::new(Box::new(Slider::new(
+            ColorType::Green,
+            set.len(),
+            (10.0, 1300.0),
+            (255.0, 20.0),
+            5.0,
+        )) as Box<dyn Widget>));
+        set.insert(RefCell::new(Box::new(Slider::new(
+            ColorType::Red,
+            set.len(),
+            (10.0, 1200.0),
+            (255.0, 20.0),
+            5.0,
+        )) as Box<dyn Widget>));
 
         Gui {
             example_planet: circle,

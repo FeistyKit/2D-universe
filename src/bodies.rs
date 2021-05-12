@@ -142,6 +142,7 @@ impl From<BodySerializable> for SpaceBody<'_> {
     }
 }
 impl<'a> WorldSpace<'a> {
+    #[allow(unused)]
     pub fn validate(&mut self) {
         if !self.bodies.is_empty() {
             for i in 0..self.bodies.len() {

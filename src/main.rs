@@ -41,7 +41,6 @@ fn main() {
         window.set_active(true);
         window.clear(Color::BLACK);
         space.advance(&mut window, &Default::default());
-        space.validate();
         gui.update_draw(&mut window);
         gui.update_draw_focused_display(space.prepare_for_gui(), &mut window);
         window.display();
