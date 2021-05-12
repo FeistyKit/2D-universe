@@ -14,7 +14,7 @@ use sfml::{
 
 use crate::{
     bodies::{SpaceBody, WorldSpace},
-    testbutton::TestButton,
+    sliders::{ColorType, Slider},
     widgets::Widget,
     WINDOW_SIZE,
 };
@@ -45,9 +45,13 @@ impl<'a> Gui<'a> {
         ));
         #[allow(clippy::mutable_key_type)]
         let mut set = BTreeSet::new();
-        set.insert(RefCell::new(
-            Box::new(TestButton::default(set.len())) as Box<dyn Widget>
-        ));
+        set.insert(RefCell::new(Box::new(Slider::new(
+            ColorType::Blue,
+            set.len(),
+            (10.0, 1400.0),
+            (255.0, 20.0),
+            5.0,
+        )) as Box<dyn Widget>));
 
         Gui {
             example_planet: circle,
@@ -68,7 +72,9 @@ impl<'a> Gui<'a> {
         if self.click_held {
             for widget in self.widgets.iter() {
                 if widget.borrow().is_click_held() {
-                    widget.borrow_mut().mouse_moved(x, y);
+                    widget
+                        .borrow_mut()
+                        .mouse_moved(&mut self.example_planet, x, y);
                     return;
                 }
             }
@@ -122,7 +128,7 @@ impl<'a> Gui<'a> {
                 (mouse_pos.x as f32 - self.held_position.unwrap().x) / NEW_PLANET_SPEED_MOD,
                 (mouse_pos.y as f32 - self.held_position.unwrap().y) / NEW_PLANET_SPEED_MOD,
                 false,
-                Color::WHITE,
+                self.example_planet.fill_color(),
                 space.bodies.len(),
             ));
             self.held_position = None;
@@ -136,7 +142,9 @@ impl<'a> Gui<'a> {
         self.click_held = false;
         for widget in self.widgets.iter() {
             if widget.borrow().is_click_held() {
-                widget.borrow_mut().release_click(&self, space);
+                widget
+                    .borrow_mut()
+                    .release_click(&mut self.example_planet, space);
             }
         }
     }

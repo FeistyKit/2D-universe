@@ -1,6 +1,8 @@
 mod bodies;
 mod gui;
 mod shapes;
+#[path = "./buttons/sliders.rs"]
+mod sliders;
 #[path = "./buttons/testbutton.rs"]
 mod testbutton;
 mod trails;
@@ -69,7 +71,7 @@ fn handle_events(
             space.switch_stopped();
         } else if code == Key::G {
             println!("You found my dev key!");
-            println!("{:?}", space.bodies);
+            println!("{:?}", gui.widgets);
         } else if code == Key::Right {
             space.advance_focused_idx();
         } else if code == Key::Up {

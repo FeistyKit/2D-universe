@@ -1,5 +1,5 @@
 use sfml::{
-    graphics::{CircleShape, Color, RectangleShape, Shape, Transformable},
+    graphics::{CircleShape, Color, Drawable, RectangleShape, RenderTarget, Shape, Transformable},
     system::Vector2f,
 };
 use std::f32::consts::PI;
@@ -10,7 +10,7 @@ pub struct RoundedRect<'a> {
     pub rectangles: [RectangleShape<'a>; 2],
     pub dimensions: Vector2f,
     pub position: Vector2f,
-    pub color: Color,
+    color: Color,
 }
 impl RoundedRect<'_> {
     #[allow(unused)]
@@ -93,6 +93,17 @@ impl RoundedRect<'_> {
     #[allow(unused)]
     fn change_radius(&mut self, radius: f32) {
         *self = RoundedRect::new(radius, self.dimensions, self.position, self.color);
+    }
+    pub fn get_bounds(&self) -> (Vector2f, Vector2f) {
+        (self.position, self.position + self.dimensions)
+    }
+    pub fn draw(&self, target: &mut dyn RenderTarget) {
+        self.circles
+            .iter()
+            .for_each(|f| f.draw(target, Default::default()));
+        self.rectangles
+            .iter()
+            .for_each(|r| r.draw(target, Default::default()));
     }
 }
 impl Transformable for RoundedRect<'_> {

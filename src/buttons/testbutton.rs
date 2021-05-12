@@ -1,5 +1,5 @@
 use sfml::{
-    graphics::{Color, Drawable, RenderTarget, Transformable},
+    graphics::{CircleShape, Color, RenderTarget, Transformable},
     system::Vector2f,
 };
 use std::usize;
@@ -29,18 +29,11 @@ impl Widget for TestButton<'_> {
     }
 
     fn draw(&self, target: &mut dyn RenderTarget) {
-        self.rect
-            .circles
-            .iter()
-            .for_each(|f| f.draw(target, Default::default()));
-        self.rect
-            .rectangles
-            .iter()
-            .for_each(|r| r.draw(target, Default::default()));
+        self.rect.draw(target);
     }
 
     fn widget_type(&self) -> WidgetKind {
-        WidgetKind::TestButton(format!("{:?}", self))
+        WidgetKind::TestButton
     }
     #[allow(unused)]
     fn click(&mut self, gui: &Gui, space: &mut WorldSpace) {
@@ -48,7 +41,7 @@ impl Widget for TestButton<'_> {
         self.is_click_held = true;
     }
     #[allow(unused)]
-    fn release_click(&mut self, gui: &Gui, space: &mut WorldSpace) {
+    fn release_click(&mut self, gui: &mut CircleShape, space: &mut WorldSpace) {
         self.rect.set_fill_color(Color::BLUE);
         self.is_click_held = false;
     }
@@ -59,7 +52,7 @@ impl Widget for TestButton<'_> {
     fn debug_string(&self) -> std::string::String {
         format!("{:?}", self)
     }
-    fn mouse_moved(&mut self, x: i32, y: i32) {
+    fn mouse_moved(&mut self, _: &mut CircleShape, x: i32, y: i32) {
         self.rect.set_origin((x as f32, y as f32));
     }
 }

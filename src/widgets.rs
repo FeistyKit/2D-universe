@@ -1,10 +1,14 @@
-use sfml::{graphics::RenderTarget, system::Vector2f};
+use sfml::{
+    graphics::{CircleShape, RenderTarget},
+    system::Vector2f,
+};
 use std::{fmt::Debug, usize};
 
 use crate::{bodies::WorldSpace, gui::Gui};
 #[derive(Debug)]
 pub enum WidgetKind {
-    TestButton(String),
+    TestButton,
+    Slider,
 }
 
 pub trait Widget {
@@ -13,10 +17,10 @@ pub trait Widget {
     fn draw(&self, target: &mut dyn RenderTarget);
     fn widget_type(&self) -> WidgetKind;
     fn click(&mut self, gui: &Gui, space: &mut WorldSpace);
-    fn release_click(&mut self, gui: &Gui, space: &mut WorldSpace);
+    fn release_click(&mut self, example_planet: &mut CircleShape, space: &mut WorldSpace);
     fn is_click_held(&self) -> bool;
     fn debug_string(&self) -> String;
-    fn mouse_moved(&mut self, x: i32, y: i32);
+    fn mouse_moved(&mut self, planet: &mut CircleShape, x: i32, y: i32);
 }
 impl PartialOrd for dyn Widget {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
