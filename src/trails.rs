@@ -1,9 +1,9 @@
+use crate::WINDOW_SIZE;
 use sfml::{
     graphics::{CircleShape, Drawable, RenderTarget, Transformable},
     system::Vector2f,
 };
 
-use crate::WINDOW_SIZE;
 pub const DEATH_AGE: usize = 100;
 #[derive(Debug)]
 pub struct TrailPoint<'a> {
@@ -12,7 +12,6 @@ pub struct TrailPoint<'a> {
     x: f32,
     y: f32,
 }
-
 impl TrailPoint<'_> {
     pub fn draw(&mut self, target: &mut dyn RenderTarget, cam_pos: Vector2f) {
         self.circle.set_position((

@@ -205,12 +205,17 @@ impl<'a> WorldSpace<'a> {
                 + body_b.shape.fill_color().b as f32 * body_b.mass)
                 / total_mass) as u8,
         );
-        let radius = (body_a.radius * body_a.radius + body_b.radius * body_b.radius).sqrt();
+        let radius = (body_a.radius * body_a.radius * body_a.radius
+            + body_b.radius * body_b.radius * body_b.radius)
+            .cbrt();
         let xv = (body_a.xv * body_a.mass + body_b.xv * body_b.mass) / total_mass;
         let yv = (body_a.yv * body_a.mass + body_b.yv * body_b.mass) / total_mass;
+        let _mass_diff = body_a.mass - body_b.mass;
+        let x_diff = body_a.x - body_b.x;
+        let y_diff = body_a.y - body_b.x;
         let position = (
-            body_a.x / 2.0 + body_b.x / 2.0,
-            body_a.y / 2.0 + body_b.y / 2.0,
+            body_a.x / 2.0 + body_b.x / 2.0 + x_diff / total_mass,
+            body_a.y / 2.0 + body_b.y / 2.0 + y_diff / total_mass,
         );
         SpaceBody::new(
             position,
@@ -275,12 +280,12 @@ impl<'a> WorldSpace<'a> {
         }
         let mut q = self.bodies.len();
         for mut i in to_push {
-            i.index = q;
             if let Some(idx) = new_focused {
                 if idx == i.index {
                     self.focused_idx = Some(q);
                 }
             }
+            i.index = q;
             self.bodies.push(i);
             q += 1;
         }
