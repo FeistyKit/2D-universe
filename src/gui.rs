@@ -36,7 +36,7 @@ pub struct Gui<'a> {
 }
 
 impl<'a> Gui<'a> {
-    pub fn new(size: Vector2<u32>, font: &'a SfBox<Font>) -> Self {
+    pub fn new(size: Vector2<u32>, font: &'a SfBox<Font>) -> Gui<'a> {
         let mut circle = CircleShape::new(30.0, 100);
         let default_radius = 30;
         circle.set_position((
@@ -118,7 +118,7 @@ impl<'a> Gui<'a> {
             widget.borrow().draw(target);
         }
     }
-    pub fn click(&'a mut self, space: &mut WorldSpace, mouse_pos: Vector2<i32>) {
+    pub fn click(&mut self, space: &mut WorldSpace, mouse_pos: Vector2<i32>) {
         for widget in self.widgets.iter() {
             let bounds = widget.borrow().get_bounds();
             if inside(bounds, mouse_pos) {

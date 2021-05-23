@@ -20,6 +20,7 @@ pub const WINDOW_SIZE: (f32, f32) = (1600.0, 1600.0);
 
 use crate::gui::Gui;
 fn main() {
+    let consolas = Font::from_memory(CONSOLAS_BYTES).unwrap();
     let mut space = WorldSpace::deserialize("space.json").unwrap_or_default();
     space.focused_idx = Some(0);
     let mut window = RenderWindow::new(
@@ -29,7 +30,7 @@ fn main() {
         &Default::default(),
     );
     window.set_framerate_limit(45);
-    let consolas = Font::from_memory(CONSOLAS_BYTES).unwrap();
+
     let mut gui = Gui::new(window.size(), &consolas);
     'running: while window.is_open() {
         while let Some(event) = window.poll_event() {
