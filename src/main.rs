@@ -47,11 +47,11 @@ fn main() {
     }
 }
 
-fn handle_events(
+fn handle_events<'a, 'b: 'a>(
     event: Event,
     window: &mut RenderWindow,
-    space: &mut WorldSpace,
-    gui: &mut Gui,
+    space: &'a mut WorldSpace<'b>,
+    gui: &'a mut Gui<'b>,
 ) -> bool {
     if event == Event::Closed {
         window.close();

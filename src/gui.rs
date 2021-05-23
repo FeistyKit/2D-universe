@@ -32,7 +32,7 @@ pub struct Gui<'a> {
     focused_planet: Option<CircleShape<'a>>,
     focused_number_display: Option<Text<'a>>,
     pub widgets: BTreeSet<RefCell<Box<dyn Widget>>>,
-    click_held: bool,
+    click_held: Option<usize>,
 }
 
 impl<'a> Gui<'a> {
@@ -79,19 +79,17 @@ impl<'a> Gui<'a> {
             focused_planet: None,
             focused_number_display: None,
             widgets: set,
-            click_held: false,
+            click_held: None,
         }
     }
     pub fn mouse_moved(&mut self, x: i32, y: i32) {
-        if self.click_held {
-            for widget in self.widgets.iter() {
-                if widget.borrow().is_click_held() {
-                    widget
-                        .borrow_mut()
-                        .mouse_moved(&mut self.example_planet, x, y);
-                    return;
-                }
-            }
+        if let Some(wid) = self.click_held {
+            self.widgets
+                .iter()
+                .nth(wid)
+                .unwrap()
+                .borrow_mut()
+                .mouse_moved(&mut self.example_planet, x, y);
         }
     }
     pub fn update_draw(&mut self, target: &mut RenderWindow) {
@@ -120,12 +118,12 @@ impl<'a> Gui<'a> {
             widget.borrow().draw(target);
         }
     }
-    pub fn click(&mut self, space: &mut WorldSpace, mouse_pos: Vector2<i32>) {
-        self.click_held = true;
+    pub fn click(&'a mut self, space: &mut WorldSpace, mouse_pos: Vector2<i32>) {
         for widget in self.widgets.iter() {
             let bounds = widget.borrow().get_bounds();
             if inside(bounds, mouse_pos) {
                 widget.borrow_mut().click(self, space);
+                self.click_held = Some(widget.borrow().get_layer());
                 return;
             }
         }
@@ -153,7 +151,7 @@ impl<'a> Gui<'a> {
         }
     }
     pub fn release_click(&mut self, space: &mut WorldSpace) {
-        self.click_held = false;
+        self.click_held = None;
         for widget in self.widgets.iter() {
             if widget.borrow().is_click_held() {
                 widget
